@@ -1,23 +1,57 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from "vue-router"
+
+const ProtectedLayout = () => import("../layouts/ProtectedLayout.vue")
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-  ],
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [
+        {
+            path: "/login",
+            name: "login",
+            component: () => import("../views/Login.vue"),
+        },
+        {
+            path: "/",
+            component: ProtectedLayout,
+            meta: { requiresAuth: true },
+            children: [
+                { path: "", name: "dashboard", component: () => import("../views/Dashboard.vue") },
+                { path: "offers", name: "offers", component: () => import("../views/Offers.vue") },
+                {
+                    path: "offers/:id",
+                    name: "offer-detail",
+                    component: () => import("../views/Offers.vue"),
+                    props: true,
+                },
+                {
+                    path: "tracking",
+                    name: "tracking",
+                    component: () => import("../views/Tracking.vue"),
+                },
+                {
+                    path: "tracking/:id",
+                    name: "tracking-detail",
+                    component: () => import("../views/Tracking.vue"),
+                    props: true,
+                },
+                {
+                    path: "create-offer",
+                    name: "create-offer",
+                    component: () => import("../views/CreateOffer.vue"),
+                },
+                {
+                    path: "data-panel",
+                    name: "data-panel",
+                    component: () => import("../views/DataPanel.vue"),
+                },
+                {
+                    path: "user-panel",
+                    name: "user-panel",
+                    component: () => import("../views/UserPanel.vue"),
+                },
+            ],
+        },
+    ],
 })
 
 export default router

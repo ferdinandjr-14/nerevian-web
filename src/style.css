@@ -1,1 +1,14 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+@theme {
+    --color-primary: #fffdee;
+    --color-secondary: #0a3a40;
+    --color-accent: #118c8c;
+    --color-dark: #160800;
+    --color-danger: #ff686b;
+}
+
+body {
+    background-color: var(--color-primary);
+}
