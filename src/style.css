@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 
@@ -7,6 +8,10 @@
     --color-accent: #118c8c;
     --color-dark: #160800;
     --color-danger: #ff686b;
+}
+
+* {
+    font-family: "Jost", sans-serif;
 }
 
 body {
