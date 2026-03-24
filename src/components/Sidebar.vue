@@ -93,7 +93,7 @@ a {
     text-align: right;
     text-decoration: none;
     color: white;
-    padding: 8px 12px;
+    padding: 10px 12px;
     border-radius: 0 8px 8px 0;
     display: inline-block;
 
