@@ -15,7 +15,8 @@ const router = createRouter({
             component: ProtectedLayout,
             meta: { requiresAuth: true },
             children: [
-                { path: "", name: "dashboard", component: () => import("../views/Dashboard.vue") },
+                { path: "", redirect: { name: "dashboard" } },
+                { path: "dashboard", name: "dashboard", component: () => import("../views/Dashboard.vue") },
                 { path: "offers", name: "offers", component: () => import("../views/Offers.vue") },
                 {
                     path: "offers/:id",
