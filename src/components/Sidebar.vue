@@ -19,12 +19,26 @@
             v-if="isOpen"
             class="w-64 bg-secondary text-white p-8 absolute top-0 bottom-0 left-0 z-98"
         >
-            <nav class="flex flex-col items-end gap-8 h-full">
-                <RouterLink to="/dashboard">Dashboard</RouterLink>
-                <RouterLink to="/offers">Offers</RouterLink>
-                <RouterLink to="/tracking">Tracking</RouterLink>
-                <RouterLink to="/create-offer">Create Offer</RouterLink>
-                <RouterLink to="/user-panel">User Panel</RouterLink>
+            <nav class="flex flex-col items-end gap-3 h-full">
+                <RouterLink to="/dashboard" :class="route.name === 'dashboard' ? 'active-link' : ''"
+                    >Dashboard</RouterLink
+                >
+                <RouterLink to="/offers" :class="route.name === 'offers' ? 'active-link' : ''"
+                    >Offers</RouterLink
+                >
+                <RouterLink to="/tracking" :class="route.name === 'tracking' ? 'active-link' : ''"
+                    >Tracking</RouterLink
+                >
+                <RouterLink
+                    to="/create-offer"
+                    :class="route.name === 'create-offer' ? 'active-link' : ''"
+                    >Create Offer</RouterLink
+                >
+                <RouterLink
+                    to="/user-panel"
+                    :class="route.name === 'user-panel' ? 'active-link' : ''"
+                    >User Panel</RouterLink
+                >
 
                 <button class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto">
                     Sign out <i class="pi pi-sign-out"></i>
@@ -37,6 +51,9 @@
 <script setup>
 import { ref } from "vue"
 import { RouterLink } from "vue-router"
+import { useRoute } from "vue-router"
+
+const route = useRoute()
 
 const isOpen = ref(false)
 
@@ -62,5 +79,30 @@ const toggleSidebar = () => {
 .slide-enter-from,
 .slide-leave-to {
     transform: translateX(-100%);
+}
+
+.active-link {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0) 1%, #118c8c 100%);
+}
+
+a {
+    min-width: 150px;
+    text-align: right;
+    text-decoration: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    display: inline-block;
+
+    background: linear-gradient(to right, rgba(0, 0, 0, 0) 50%, #118c8c 100%);
+    background-size: 200% 100%;
+    background-position: left bottom;
+
+    transition: all 0.3s ease-in-out;
+}
+
+a:hover {
+    background-position: right bottom;
+    color: #ffffff;
 }
 </style>
