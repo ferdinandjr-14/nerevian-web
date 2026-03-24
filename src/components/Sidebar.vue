@@ -40,8 +40,11 @@
                     >User Panel</RouterLink
                 >
 
-                <button class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto">
-                    Sign out <i class="pi pi-sign-out"></i>
+                <button class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto group">
+                    Sign out
+                    <i
+                        class="pi pi-sign-out group-hover:translate-x-1.5 transition-all duration-300 ease-in-out"
+                    ></i>
                 </button>
             </nav>
         </div>
