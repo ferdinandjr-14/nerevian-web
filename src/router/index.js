@@ -50,6 +50,14 @@ const router = createRouter({
                     name: "user-panel",
                     component: () => import("../views/UserPanel.vue"),
                 },
+                {
+                    path: "Userpanel",
+                    redirect: { name: "user-panel" },
+                },
+                {
+                    path: "userpanel",
+                    redirect: { name: "user-panel" },
+                },
             ],
         },
     ],
