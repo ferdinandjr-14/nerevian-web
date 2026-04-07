@@ -32,7 +32,7 @@ const router = createRouter({
                 {
                     path: "tracking/:id",
                     name: "tracking-detail",
-                    component: () => import("../views/Tracking.vue"),
+                    component: () => import("../views/TrackingDetails.vue"),
                     props: true,
                 },
                 {
