@@ -1,5 +1,5 @@
 <template>
-  <section class="dashboard">
+  <section class="dashboard bg-primary">
     <div class="stats-grid">
       <article v-for="card in statsCards" :key="card.label" class="stat-card">
         <p class="stat-label">{{ card.label }}</p>
@@ -362,8 +362,6 @@ const statusClass = (status) => {
 .dashboard {
   min-height: 100vh;
   padding: 2rem;
-  background: #e8e8dd;
-  color: #e9f2f2;
 }
 
 .stats-grid {
