@@ -1,655 +1,600 @@
 <template>
-	<section class="user-panel-page">
-		<header class="user-panel-topbar">
-			<button class="back-btn" type="button" @click="goBack">←</button>
-		</header>
+    <section class="user-panel-page">
+        <header class="user-panel-topbar">
+            <Button icon="pi pi-arrow-left" text class="back-btn" type="button" @click="goBack" />
+        </header>
 
-		<div class="panel-toolbar">
-			<button class="add-user-btn" type="button" @click="openCreateModal">ADD USER</button>
-			<button class="filter-btn" type="button" aria-label="Filter users">
-				<span class="filter-glyph" aria-hidden="true"></span>
-			</button>
-		</div>
+        <div class="panel-toolbar">
+            <Button label="ADD USER" type="button" class="add-user-btn" @click="openCreateModal" />
+            <Button icon="pi pi-filter-slash" type="button" class="filter-btn" aria-label="Clear filters" @click="clearFilters" />
+        </div>
 
-		<section class="users-table-wrap">
-			<div class="table-head">
-				<span>ID ↓↑</span>
-				<span>NAME ↓↑</span>
-				<span>SURNAME ↓↑</span>
-				<span>EMAIL ↓↑</span>
-				<span>DNI ↓↑</span>
-				<span class="center-cell">ACTION</span>
-			</div>
+        <Tabs v-model:value="activeRoleTab" class="role-tabs">
+            <TabList>
+                <Tab v-for="role in roleTabs" :key="role.value" :value="role.value">{{ role.label }}</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel v-for="role in roleTabs" :key="`${role.value}-panel`" :value="role.value">
+                    <Card class="users-table-wrap">
+                        <template #content>
+                            <DataTable
+                                v-model:filters="tableFilters"
+                                :value="usersByRole(role.value)"
+                                :globalFilterFields="['id', 'name', 'surname', 'email']"
+                                class="users-table"
+                                dataKey="id"
+                                paginator
+                                :rows="12"
+                                :rowsPerPageOptions="[12, 24, 36]"
+                                filterDisplay="row"
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                                currentPageReportTemplate="Showing {first}-{last} of {totalRecords} users"
+                            >
+                                <template #header>
+                                    <div class="table-head-tools">
+                                        <IconField>
+                                            <InputIcon class="pi pi-search" />
+                                            <InputText
+                                                v-model="tableFilters.global.value"
+                                                placeholder="Search users"
+                                            />
+                                        </IconField>
+                                    </div>
+                                </template>
 
-			<div class="table-filters">
-				<input v-model="filters.id" type="text" placeholder="Search by ID" />
-				<input v-model="filters.name" type="text" placeholder="Search by Name" />
-				<input v-model="filters.surname" type="text" placeholder="Search by Surname" />
-				<input v-model="filters.email" type="text" placeholder="Search by Full Name" />
-				<input v-model="filters.dni" type="text" placeholder="Search by DNI" />
-				<div></div>
-			</div>
+                                <Column field="id" header="ID" sortable :showFilterMenu="false">
+                                    <template #filter="{ filterModel, filterCallback }">
+                                        <InputText
+                                            v-model="filterModel.value"
+                                            placeholder="Search by ID"
+                                            @input="filterCallback()"
+                                        />
+                                    </template>
+                                </Column>
+                                <Column field="name" header="NAME" sortable :showFilterMenu="false">
+                                    <template #filter="{ filterModel, filterCallback }">
+                                        <InputText
+                                            v-model="filterModel.value"
+                                            placeholder="Search by Name"
+                                            @input="filterCallback()"
+                                        />
+                                    </template>
+                                </Column>
+                                <Column field="surname" header="SURNAME" sortable :showFilterMenu="false">
+                                    <template #filter="{ filterModel, filterCallback }">
+                                        <InputText
+                                            v-model="filterModel.value"
+                                            placeholder="Search by Surname"
+                                            @input="filterCallback()"
+                                        />
+                                    </template>
+                                </Column>
+                                <Column field="email" header="EMAIL" sortable :showFilterMenu="false">
+                                    <template #filter="{ filterModel, filterCallback }">
+                                        <InputText
+                                            v-model="filterModel.value"
+                                            placeholder="Search by Email"
+                                            @input="filterCallback()"
+                                        />
+                                    </template>
+                                </Column>
+                                <Column header="ACTION">
+                                    <template #body="{ data }">
+                                        <div class="action-cell">
+                                            <Button
+                                                icon="pi pi-pencil"
+                                                text
+                                                type="button"
+                                                class="icon-btn"
+                                                aria-label="Edit user"
+                                                @click="openEditModal(data)"
+                                            />
+                                            <Button
+                                                icon="pi pi-trash"
+                                                text
+                                                type="button"
+                                                class="icon-btn"
+                                                aria-label="Delete user"
+                                                @click="openDeleteConfirm(data)"
+                                            />
+                                        </div>
+                                    </template>
+                                </Column>
 
-			<div class="table-body">
-				<div v-for="user in pagedUsers" :key="user.id" class="table-row">
-					<span>{{ user.id }}</span>
-					<span>{{ user.name }}</span>
-					<span>{{ user.surname }}</span>
-					<span>{{ user.email }}</span>
-					<span>{{ user.dni }}</span>
-					<div class="action-cell">
-						<button type="button" class="icon-btn" aria-label="Edit user" @click="openEditModal(user)">
-							✎
-						</button>
-						<button type="button" class="icon-btn" aria-label="Delete user" @click="openDeleteConfirm(user)">
-							🗑
-						</button>
-					</div>
-				</div>
+                                <template #empty>
+                                    <p class="empty-row">No users found.</p>
+                                </template>
+                            </DataTable>
+                        </template>
+                    </Card>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
 
-				<p v-if="!pagedUsers.length" class="empty-row">No users found.</p>
-			</div>
+        <Dialog
+            v-model:visible="showUserModal"
+            modal
+            :header="isEditing ? 'EDIT USER' : 'CREATE USER'"
+            class="user-dialog"
+            :draggable="false"
+        >
+            <div class="modal-body">
+                <label>
+                    <span>NAME</span>
+                    <InputText v-model="userForm.name" type="text" />
+                </label>
+                <label>
+                    <span>SURNAME</span>
+                    <InputText v-model="userForm.surname" type="text" />
+                </label>
+                <label>
+                    <span>EMAIL</span>
+                    <InputText v-model="userForm.email" type="email" />
+                </label>
+                <label>
+                    <span>PASSWORD</span>
+                    <Password v-model="userForm.password" :feedback="false" toggleMask />
+                </label>
+                <label>
+                    <span>ROLE</span>
+                    <Select
+                        v-model="userForm.role"
+                        :options="roleTabs"
+                        optionLabel="label"
+                        optionValue="value"
+                    />
+                </label>
+            </div>
+            <template #footer>
+                <Button label="CANCEL" type="button" class="modal-cancel" @click="closeUserModal" />
+                <Button
+                    :label="isEditing ? 'SAVE' : 'CREATE'"
+                    type="button"
+                    class="modal-submit"
+                    @click="saveUser"
+                />
+            </template>
+        </Dialog>
 
-			<footer class="table-footer">
-				<button type="button" :disabled="currentPage === 1" @click="goToPage(1)">«</button>
-				<button type="button" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">‹</button>
-				<button
-					v-for="page in visiblePages"
-					:key="page"
-					type="button"
-					:class="{ active: page === currentPage }"
-					@click="goToPage(page)"
-				>
-					{{ page }}
-				</button>
-				<button type="button" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">›</button>
-				<button type="button" :disabled="currentPage === totalPages" @click="goToPage(totalPages)">»</button>
-			</footer>
-		</section>
-
-		<div v-if="showUserModal" class="overlay" @click.self="closeUserModal">
-			<div class="modal-card user-modal">
-				<header class="modal-head">{{ isEditing ? 'EDIT USER' : 'CREATE USER' }}</header>
-				<div class="modal-body">
-					<label>
-						<span>NAME</span>
-						<input v-model="userForm.name" type="text" />
-					</label>
-					<label>
-						<span>SURNAME</span>
-						<input v-model="userForm.surname" type="text" />
-					</label>
-					<label>
-						<span>EMAIL</span>
-						<input v-model="userForm.email" type="email" />
-					</label>
-					<label>
-						<span>PASSWORD</span>
-						<input v-model="userForm.password" type="password" />
-					</label>
-					<label>
-						<span>DNI</span>
-						<input v-model="userForm.dni" type="text" />
-					</label>
-				</div>
-				<footer class="modal-foot">
-					<button type="button" class="modal-cancel" @click="closeUserModal">CANCEL</button>
-					<button type="button" class="modal-submit" @click="saveUser">{{ isEditing ? 'SAVE' : 'CREATE' }}</button>
-				</footer>
-			</div>
-		</div>
-
-		<div v-if="showDeleteConfirm" class="confirm-box">
-			<p>¿Are you sure you want to delete this user?</p>
-			<div class="confirm-actions">
-				<button type="button" class="confirm-cancel" @click="closeDeleteConfirm">CANCEL</button>
-				<button type="button" class="confirm-accept" @click="deleteUser">ACCEPT</button>
-			</div>
-		</div>
-	</section>
+        <ConfirmDialog />
+    </section>
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref } from "vue"
+import { useRouter } from "vue-router"
+import { useConfirm } from "primevue/useconfirm"
+import { FilterMatchMode } from "@primevue/core/api"
 
 const router = useRouter()
-
+const confirm = useConfirm()
 const nextIdSeed = ref(11235423)
 
+const roleTabs = [
+    { label: "Operator", value: "operator" },
+    { label: "Commercial", value: "commercial" },
+    { label: "Clients", value: "client" },
+]
+
+const activeRoleTab = ref("operator")
+
 const users = ref([
-	{ id: 11235423, name: 'Jane', surname: 'Doe', email: 'janedoe@nerevian.com', dni: '53258673X' },
-	{ id: 11235424, name: 'Carlos', surname: 'Ruiz', email: 'cruiz@nerevian.com', dni: '45122780M' },
-	{ id: 11235425, name: 'Ana', surname: 'Pardo', email: 'apardo@nerevian.com', dni: '92846652K' },
-	{ id: 11235426, name: 'Luis', surname: 'Ibarra', email: 'libarra@nerevian.com', dni: '33124489J' },
-	{ id: 11235427, name: 'Marta', surname: 'Vega', email: 'mvega@nerevian.com', dni: '78341290H' },
-	{ id: 11235428, name: 'David', surname: 'Soler', email: 'dsoler@nerevian.com', dni: '50229844B' },
-	{ id: 11235429, name: 'Irene', surname: 'Nieto', email: 'inieto@nerevian.com', dni: '63547821Q' },
-	{ id: 11235430, name: 'Pablo', surname: 'Mora', email: 'pmora@nerevian.com', dni: '71652093L' },
-	{ id: 11235431, name: 'Nora', surname: 'Campos', email: 'ncampos@nerevian.com', dni: '46882157T' },
-	{ id: 11235432, name: 'Mario', surname: 'Costa', email: 'mcosta@nerevian.com', dni: '60999321Z' },
-	{ id: 11235433, name: 'Julia', surname: 'Lozano', email: 'jlozano@nerevian.com', dni: '79923415N' },
-	{ id: 11235434, name: 'Eric', surname: 'Sanz', email: 'esanz@nerevian.com', dni: '58700123D' },
-	{ id: 11235435, name: 'Sofia', surname: 'Ramos', email: 'sramos@nerevian.com', dni: '31004475C' },
-	{ id: 11235436, name: 'Alvaro', surname: 'Bellido', email: 'abellido@nerevian.com', dni: '94431028P' }
+    { id: 11235423, name: "Jane", surname: "Doe", email: "janedoe@nerevian.com", role: "operator" },
+    { id: 11235424, name: "Carlos", surname: "Ruiz", email: "cruiz@nerevian.com", role: "commercial" },
+    { id: 11235425, name: "Ana", surname: "Pardo", email: "apardo@nerevian.com", role: "client" },
+    { id: 11235426, name: "Luis", surname: "Ibarra", email: "libarra@nerevian.com", role: "operator" },
+    { id: 11235427, name: "Marta", surname: "Vega", email: "mvega@nerevian.com", role: "commercial" },
+    { id: 11235428, name: "David", surname: "Soler", email: "dsoler@nerevian.com", role: "client" },
+    { id: 11235429, name: "Irene", surname: "Nieto", email: "inieto@nerevian.com", role: "operator" },
+    { id: 11235430, name: "Pablo", surname: "Mora", email: "pmora@nerevian.com", role: "commercial" },
+    { id: 11235431, name: "Nora", surname: "Campos", email: "ncampos@nerevian.com", role: "client" },
+    { id: 11235432, name: "Mario", surname: "Costa", email: "mcosta@nerevian.com", role: "operator" },
+    { id: 11235433, name: "Julia", surname: "Lozano", email: "jlozano@nerevian.com", role: "commercial" },
+    { id: 11235434, name: "Eric", surname: "Sanz", email: "esanz@nerevian.com", role: "client" },
+    { id: 11235435, name: "Sofia", surname: "Ramos", email: "sramos@nerevian.com", role: "operator" },
+    { id: 11235436, name: "Alvaro", surname: "Bellido", email: "abellido@nerevian.com", role: "commercial" },
 ])
 
-const filters = reactive({
-	id: '',
-	name: '',
-	surname: '',
-	email: '',
-	dni: ''
-})
-
-const itemsPerPage = 12
-const currentPage = ref(1)
-
 const showUserModal = ref(false)
-const showDeleteConfirm = ref(false)
 const isEditing = ref(false)
 const selectedUserId = ref(null)
 
 const userForm = reactive({
-	name: '',
-	surname: '',
-	email: '',
-	password: '',
-	dni: ''
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    role: "operator",
 })
 
-const filteredUsers = computed(() => {
-	const normalize = (value) => String(value).toLowerCase().trim()
-
-	return users.value.filter((user) => {
-		if (filters.id && !String(user.id).includes(filters.id.trim())) return false
-		if (filters.name && !normalize(user.name).includes(normalize(filters.name))) return false
-		if (filters.surname && !normalize(user.surname).includes(normalize(filters.surname))) return false
-		if (filters.email && !normalize(user.email).includes(normalize(filters.email))) return false
-		if (filters.dni && !normalize(user.dni).includes(normalize(filters.dni))) return false
-		return true
-	})
+const tableFilters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    id: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    surname: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    email: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / itemsPerPage)))
-
-const pagedUsers = computed(() => {
-	const start = (currentPage.value - 1) * itemsPerPage
-	return filteredUsers.value.slice(start, start + itemsPerPage)
-})
-
-const visiblePages = computed(() => {
-	const pages = []
-	for (let i = 1; i <= totalPages.value; i += 1) pages.push(i)
-	return pages
-})
-
-watch(filteredUsers, () => {
-	if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
-})
+const usersByRole = (role) => users.value.filter((user) => user.role === role)
 
 const goBack = () => {
-	router.push({ name: 'dashboard' })
+    router.push({ name: "dashboard" })
 }
 
-const goToPage = (page) => {
-	if (page < 1 || page > totalPages.value) return
-	currentPage.value = page
+const clearFilters = () => {
+    tableFilters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        id: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        surname: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        email: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    }
 }
 
 const resetUserForm = () => {
-	userForm.name = ''
-	userForm.surname = ''
-	userForm.email = ''
-	userForm.password = ''
-	userForm.dni = ''
+    userForm.name = ""
+    userForm.surname = ""
+    userForm.email = ""
+    userForm.password = ""
+    userForm.role = activeRoleTab.value
 }
 
 const openCreateModal = () => {
-	isEditing.value = false
-	selectedUserId.value = null
-	resetUserForm()
-	showUserModal.value = true
+    isEditing.value = false
+    selectedUserId.value = null
+    resetUserForm()
+    showUserModal.value = true
 }
 
 const openEditModal = (user) => {
-	isEditing.value = true
-	selectedUserId.value = user.id
-	userForm.name = user.name
-	userForm.surname = user.surname
-	userForm.email = user.email
-	userForm.password = ''
-	userForm.dni = user.dni
-	showUserModal.value = true
+    isEditing.value = true
+    selectedUserId.value = user.id
+    userForm.name = user.name
+    userForm.surname = user.surname
+    userForm.email = user.email
+    userForm.password = ""
+    userForm.role = user.role
+    showUserModal.value = true
 }
 
 const closeUserModal = () => {
-	showUserModal.value = false
+    showUserModal.value = false
 }
 
 const saveUser = () => {
-	if (!userForm.name || !userForm.surname || !userForm.email || !userForm.dni) return
+    if (!userForm.name || !userForm.surname || !userForm.email || !userForm.role) return
 
-	if (isEditing.value && selectedUserId.value !== null) {
-		const target = users.value.find((user) => user.id === selectedUserId.value)
-		if (!target) return
-		target.name = userForm.name
-		target.surname = userForm.surname
-		target.email = userForm.email
-		target.dni = userForm.dni
-		showUserModal.value = false
-		return
-	}
+    if (isEditing.value && selectedUserId.value !== null) {
+        const target = users.value.find((user) => user.id === selectedUserId.value)
+        if (!target) return
+        target.name = userForm.name
+        target.surname = userForm.surname
+        target.email = userForm.email
+        target.role = userForm.role
+        showUserModal.value = false
+        return
+    }
 
-	nextIdSeed.value += 1
-	users.value.unshift({
-		id: nextIdSeed.value,
-		name: userForm.name,
-		surname: userForm.surname,
-		email: userForm.email,
-		dni: userForm.dni
-	})
-	showUserModal.value = false
-	currentPage.value = 1
+    nextIdSeed.value += 1
+    users.value.unshift({
+        id: nextIdSeed.value,
+        name: userForm.name,
+        surname: userForm.surname,
+        email: userForm.email,
+        role: userForm.role,
+    })
+    showUserModal.value = false
 }
 
 const openDeleteConfirm = (user) => {
-	selectedUserId.value = user.id
-	showDeleteConfirm.value = true
-}
-
-const closeDeleteConfirm = () => {
-	showDeleteConfirm.value = false
-	selectedUserId.value = null
-}
-
-const deleteUser = () => {
-	users.value = users.value.filter((user) => user.id !== selectedUserId.value)
-	showDeleteConfirm.value = false
-	selectedUserId.value = null
+    selectedUserId.value = user.id
+    confirm.require({
+        message: "Are you sure you want to delete this user?",
+        header: "Delete User",
+        rejectLabel: "CANCEL",
+        acceptLabel: "ACCEPT",
+        reject: () => {
+            selectedUserId.value = null
+        },
+        accept: () => {
+            users.value = users.value.filter((item) => item.id !== selectedUserId.value)
+            selectedUserId.value = null
+        },
+    })
 }
 </script>
 
 <style scoped>
 .user-panel-page {
-	min-height: 100vh;
-	background: #e8e8dd;
-	padding: 1.2rem 1.4rem 1.6rem;
-	position: relative;
+    min-height: 100vh;
+    background: #e8e8dd;
+    padding: 1.2rem 1.4rem 1.6rem;
 }
 
 .user-panel-topbar {
-	margin-bottom: 0.65rem;
-}
-
-.back-btn {
-	border: none;
-	background: transparent;
-	color: #118c8c;
-	font-size: 2rem;
-	font-weight: 900;
-	line-height: 1;
-	cursor: pointer;
-	padding: 0;
+    margin-bottom: 0.65rem;
 }
 
 .panel-toolbar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 0.55rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.55rem;
 }
 
-.add-user-btn {
-	border: none;
-	background: #ff6666;
-	color: #fff;
-	border-radius: 7px;
-	padding: 0.62rem 1.95rem;
-	font-size: 0.9rem;
-	font-weight: 600;
-	letter-spacing: 0.25px;
-	cursor: pointer;
-}
-
-.filter-btn {
-	border: none;
-	background: #118c8c;
-	color: #fff;
-	border-radius: 7px;
-	width: 34px;
-	height: 34px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-}
-
-.filter-glyph {
-	position: relative;
-	width: 14px;
-	height: 14px;
-	display: inline-block;
-}
-
-.filter-glyph::before {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 14px;
-	height: 9px;
-	border: 2px solid #ffffff;
-	border-bottom: none;
-	border-radius: 2px 2px 0 0;
-	clip-path: polygon(0 0, 100% 0, 66% 100%, 34% 100%);
-}
-
-.filter-glyph::after {
-	content: '';
-	position: absolute;
-	left: 6px;
-	top: 8px;
-	width: 2px;
-	height: 6px;
-	background: #ffffff;
-	border-radius: 1px;
-}
-
-.users-table-wrap {
-	background: #abd2c7;
-	border-radius: 10px;
-	overflow: hidden;
-}
-
-.table-head,
-.table-filters,
-.table-row {
-	display: grid;
-	grid-template-columns: 0.9fr 1fr 1fr 1.6fr 1.3fr 1fr;
-	align-items: center;
-}
-
-.table-head {
-	background: #118c8c;
-	color: #ebf7f8;
-	font-size: 0.92rem;
-	font-weight: 600;
-	padding: 0.64rem 0;
-}
-
-.table-head span,
-.table-filters input,
-.table-row > span,
-.action-cell {
-	padding: 0 0.75rem;
-	border-right: 1px solid rgba(17, 140, 140, 0.45);
-	min-height: 100%;
-	display: flex;
-	align-items: center;
-}
-
-.table-head span:last-child,
-.table-filters :last-child,
-.table-row > span:last-child,
-.action-cell:last-child {
-	border-right: none;
-}
-
-.table-filters {
-	background: #abd2c7;
-	padding: 0.45rem 0;
-	border-bottom: 1px solid rgba(17, 140, 140, 0.35);
-}
-
-.table-filters input {
-	min-height: 26px;
-	border: none;
-	border-radius: 4px;
-	background: #eef0e8;
-	font-size: 0.66rem;
-	color: #22565c;
-	outline: none;
-	padding-left: 0.45rem;
-	padding-right: 0.45rem;
-	margin: 0 0.3rem;
-}
-
-.table-body {
-	background: #abd2c7;
-}
-
-.table-row {
-	font-size: 1.72rem;
-	color: #1f4d53;
-	min-height: 44px;
-	border-bottom: 1px solid rgba(17, 140, 140, 0.4);
-}
-
-.table-row > span {
-	font-size: 1.72rem;
-	line-height: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+.table-head-tools {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .action-cell {
-	justify-content: center;
-	gap: 0.42rem;
-	padding-right: 0;
-}
-
-.icon-btn {
-	border: none;
-	background: transparent;
-	color: #0a434a;
-	font-size: 1rem;
-	cursor: pointer;
-	line-height: 1;
-	padding: 0.1rem;
-}
-
-.icon-btn:hover {
-	color: #082e34;
+    display: flex;
+    justify-content: center;
+    gap: 0.42rem;
 }
 
 .empty-row {
-	margin: 0;
-	padding: 1rem;
-	font-size: 0.86rem;
-	color: #225057;
-}
-
-.center-cell {
-	justify-content: center;
-}
-
-.table-footer {
-	display: flex;
-	justify-content: center;
-	gap: 0.3rem;
-	padding: 0.9rem 0.8rem;
-	background: #abd2c7;
-}
-
-.table-footer button {
-	border: none;
-	background: transparent;
-	color: #118c8c;
-	font-size: 1.1rem;
-	cursor: pointer;
-	padding: 0;
-	min-width: 16px;
-}
-
-.table-footer button:disabled {
-	opacity: 0.3;
-	cursor: not-allowed;
-}
-
-.table-footer .active {
-	font-weight: 800;
-	color: #0b6262;
-}
-
-.overlay {
-	position: fixed;
-	inset: 0;
-	background: rgba(10, 45, 49, 0.5);
-	display: grid;
-	place-items: center;
-	padding: 1rem;
-	z-index: 15;
-}
-
-.modal-card {
-	width: min(520px, 100%);
-	background: #ece9dd;
-	border-radius: 5px;
-	overflow: hidden;
-	box-shadow: 0 12px 22px rgba(0, 0, 0, 0.22);
-}
-
-.modal-head {
-	background: #083f49;
-	color: #fff;
-	font-size: 0.92rem;
-	text-align: center;
-	padding: 0.5rem;
-	font-weight: 700;
+    margin: 0;
+    padding: 1rem;
+    color: #225057;
 }
 
 .modal-body {
-	padding: 0.7rem 0.9rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
 }
 
 .modal-body label {
-	display: flex;
-	flex-direction: column;
-	gap: 0.24rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.24rem;
 }
 
 .modal-body span {
-	font-size: 0.72rem;
-	color: #213c41;
-	font-weight: 600;
+    color: #213c41;
+    font-weight: 600;
 }
 
-.modal-body input {
-	border: none;
-	border-radius: 4px;
-	background: #d8d8d8;
-	height: 31px;
-	padding: 0 0.5rem;
-	font-size: 0.78rem;
-	outline: none;
-	color: #15373e;
+:deep(.back-btn.p-button) {
+    border: none;
+    background: transparent;
+    color: #118c8c;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
 }
 
-.modal-foot {
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.45rem;
-	padding: 0 0.9rem 0.75rem;
+:deep(.add-user-btn.p-button) {
+    border: none;
+    background: #ff6666;
+    color: #fff;
+    border-radius: 7px;
+    padding: 0.62rem 1.95rem;
+    font-weight: 600;
+    letter-spacing: 0.25px;
 }
 
-.modal-cancel,
-.modal-submit {
-	border: none;
-	border-radius: 4px;
-	padding: 0.32rem 0.8rem;
-	font-size: 0.68rem;
-	cursor: pointer;
+:deep(.filter-btn.p-button) {
+    border: none;
+    background: #118c8c;
+    color: #fff;
+    border-radius: 7px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
 }
 
-.modal-cancel {
-	background: #d9d9d9;
-	color: #314f53;
+:deep(.role-tabs .p-tablist-tab-list) {
+    background: transparent;
+    border: none;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
 }
 
-.modal-submit {
-	background: #ff6666;
-	color: #fff;
+:deep(.role-tabs .p-tab) {
+    border-radius: 8px;
+    border: 1px solid #118c8c;
+    background: #abd2c7;
+    color: #11444d;
 }
 
-.confirm-box {
-	position: absolute;
-	right: 2.3rem;
-	top: 9.2rem;
-	background: #f8f8f6;
-	border-radius: 6px;
-	padding: 0.72rem 0.85rem;
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-	z-index: 12;
-	width: min(380px, calc(100% - 2rem));
+:deep(.role-tabs .p-tab.p-tab-active) {
+    background: #118c8c;
+    color: #fff;
+    border-color: #118c8c;
 }
 
-.confirm-box p {
-	margin: 0;
-	font-size: 0.78rem;
-	color: #1f363a;
-	text-align: center;
+:deep(.role-tabs .p-tabpanels) {
+    padding: 0;
+    background: transparent;
 }
 
-.confirm-actions {
-	margin-top: 0.55rem;
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.45rem;
+:deep(.users-table-wrap.p-card) {
+    background: #abd2c7;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.confirm-cancel,
-.confirm-accept {
-	border: none;
-	border-radius: 4px;
-	font-size: 0.65rem;
-	padding: 0.26rem 0.9rem;
-	cursor: pointer;
+:deep(.users-table-wrap .p-card-body) {
+    padding: 0;
 }
 
-.confirm-cancel {
-	background: #e4e4e4;
-	color: #365257;
+:deep(.users-table .p-datatable-header) {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 0.75rem 0.45rem;
 }
 
-.confirm-accept {
-	background: #ff6666;
-	color: #fff;
+:deep(.users-table .p-datatable-header .p-inputtext) {
+    min-width: 220px;
+}
+
+:deep(.users-table .p-datatable-thead > tr > th) {
+    background: #118c8c;
+    color: #ebf7f8;
+    font-weight: 600;
+    padding: 0.64rem 0.75rem;
+    border-right: 1px solid rgba(17, 140, 140, 0.45);
+}
+
+:deep(.users-table .p-datatable-thead > tr > th:last-child) {
+    border-right: none;
+    text-align: center;
+}
+
+:deep(.users-table .p-datatable-tbody > tr) {
+    background: #abd2c7;
+}
+
+:deep(.users-table .p-datatable-tbody > tr > td) {
+    color: #1f4d53;
+    border-bottom: 1px solid rgba(17, 140, 140, 0.4);
+    border-right: 1px solid rgba(17, 140, 140, 0.45);
+    padding: 0.6rem 0.75rem;
+}
+
+:deep(.users-table .p-datatable-tbody > tr > td:last-child) {
+    border-right: none;
+}
+
+:deep(.users-table .p-datatable-filter-row > th) {
+    background: #abd2c7;
+    border-right: 1px solid rgba(17, 140, 140, 0.2);
+}
+
+:deep(.users-table .p-datatable-filter-row > th:last-child) {
+    border-right: none;
+}
+
+:deep(.users-table .p-datatable-filter-row .p-inputtext) {
+    width: 100%;
+    border: none;
+    border-radius: 4px;
+    background: #eef0e8;
+    color: #22565c;
+    box-shadow: none;
+}
+
+:deep(.users-table .p-paginator) {
+    background: #abd2c7;
+    border: none;
+    padding: 0.75rem;
+}
+
+:deep(.users-table .p-paginator-page.p-paginator-page-selected) {
+    background: #118c8c;
+    color: #fff;
+}
+
+:deep(.icon-btn.p-button) {
+    border: none;
+    background: transparent;
+    color: #0a434a;
+    padding: 0.1rem;
+    min-width: auto;
+}
+
+:deep(.icon-btn.p-button:hover) {
+    color: #082e34;
+    background: transparent;
+}
+
+:deep(.user-dialog.p-dialog) {
+    width: min(520px, 100%);
+}
+
+:deep(.user-dialog .p-dialog-header) {
+    background: #083f49;
+    color: #fff;
+    font-weight: 700;
+    justify-content: center;
+}
+
+:deep(.user-dialog .p-dialog-content),
+:deep(.user-dialog .p-dialog-footer) {
+    background: #ece9dd;
+}
+
+:deep(.modal-body .p-inputtext),
+:deep(.modal-body .p-password-input),
+:deep(.modal-body .p-select) {
+    border: none;
+    border-radius: 4px;
+    background: #d8d8d8;
+    box-shadow: none;
+    color: #15373e;
+}
+
+:deep(.modal-body .p-password) {
+    width: 100%;
+}
+
+:deep(.modal-cancel.p-button),
+:deep(.modal-submit.p-button) {
+    border: none;
+    border-radius: 4px;
+    padding: 0.32rem 0.8rem;
+}
+
+:deep(.modal-cancel.p-button) {
+    background: #d9d9d9;
+    color: #314f53;
+}
+
+:deep(.modal-submit.p-button) {
+    background: #ff6666;
+    color: #fff;
+}
+
+:deep(.p-confirmdialog .p-dialog-content) {
+    background: #f8f8f6;
+}
+
+:deep(.p-confirmdialog .p-dialog-header) {
+    background: #f8f8f6;
+    color: #1f363a;
+}
+
+:deep(.p-confirmdialog .p-confirmdialog-message) {
+    color: #1f363a;
+}
+
+:deep(.p-confirmdialog-reject.p-button) {
+    background: #e4e4e4;
+    color: #365257;
+    border: none;
+}
+
+:deep(.p-confirmdialog-accept.p-button) {
+    background: #ff6666;
+    color: #fff;
+    border: none;
 }
 
 @media (max-width: 1100px) {
-	.users-table-wrap {
-		overflow-x: auto;
-	}
+    :deep(.users-table .p-datatable-table) {
+        min-width: 860px;
+    }
 
-	.table-head,
-	.table-filters,
-	.table-row {
-		min-width: 880px;
-	}
+    :deep(.users-table .p-datatable-table-container) {
+        overflow-x: auto;
+    }
 }
 
 @media (max-width: 640px) {
-	.user-panel-page {
-		padding: 0.9rem 0.65rem 1.2rem;
-	}
+    .user-panel-page {
+        padding: 0.9rem 0.65rem 1.2rem;
+    }
 
-	.panel-toolbar {
-		gap: 0.5rem;
-	}
+    .panel-toolbar {
+        gap: 0.5rem;
+    }
 
-	.add-user-btn {
-		padding: 0.52rem 1rem;
-		font-size: 0.74rem;
-	}
-
-	.confirm-box {
-		right: 0.65rem;
-		top: 7.4rem;
-	}
+    :deep(.add-user-btn.p-button) {
+        padding: 0.52rem 1rem;
+    }
 }
 </style>

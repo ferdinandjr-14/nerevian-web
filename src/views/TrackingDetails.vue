@@ -1,7 +1,7 @@
 <template>
 	<section class="tracking-details-page">
 		<header class="details-header">
-			<button type="button" class="back-btn" @click="router.push({ name: 'tracking' })">← Back to tracking</button>
+			<button type="button" class="back-btn" @click="router.push({ name: 'tracking' })">Back to tracking</button>
 			<h2>Tracking Details</h2>
 		</header>
 
@@ -29,22 +29,26 @@
 				</div>
 			</section>
 
-			<article class="details-card details-info-card">
-				<div class="details-grid">
-					<p><span>Order ID:</span> {{ order.orderId }}</p>
-					<p><span>Shipment ID:</span> {{ order.shipmentId }}</p>
-					<p><span>Carrier:</span> {{ order.carrier }}</p>
-					<p><span>Status:</span> {{ order.status }}</p>
-					<p><span>Route:</span> {{ order.route }}</p>
-					<p><span>Shipped:</span> {{ order.shipped }}</p>
-					<p><span>ETA:</span> {{ order.eta }}</p>
-				</div>
-			</article>
+			<Card class="details-card details-info-card">
+				<template #content>
+					<div class="details-grid">
+						<p><span>Order ID:</span> {{ order.orderId }}</p>
+						<p><span>Shipment ID:</span> {{ order.shipmentId }}</p>
+						<p><span>Carrier:</span> {{ order.carrier }}</p>
+						<p><span>Status:</span> {{ order.status }}</p>
+						<p><span>Route:</span> {{ order.route }}</p>
+						<p><span>Shipped:</span> {{ order.shipped }}</p>
+						<p><span>ETA:</span> {{ order.eta }}</p>
+					</div>
+				</template>
+			</Card>
 		</template>
 
-		<article v-else class="details-card missing-card">
-			<p>We could not find that order. Please go back and try another order ID.</p>
-		</article>
+		<Card v-else class="details-card missing-card">
+			<template #content>
+				<p>We could not find that order. Please go back and try another order ID.</p>
+			</template>
+		</Card>
 	</section>
 </template>
 
@@ -94,25 +98,19 @@ const order = computed(() => {
 .details-header h2 {
 	margin: 0;
 	color: #163c43;
-	font-size: 1.5rem;
 }
 
 .back-btn {
 	border: none;
 	background: #0a525c;
 	color: #eef7f7;
-	font-size: 0.78rem;
 	border-radius: 6px;
 	padding: 0.45rem 0.7rem;
 	cursor: pointer;
 }
 
 .details-card {
-	background: #073d45;
-	border: 1px solid #0f5660;
-	border-radius: 8px;
 	color: #d8ecee;
-	padding: 1.2rem;
 }
 
 .timeline-preview {
@@ -188,7 +186,6 @@ const order = computed(() => {
 
 .timeline-label {
 	margin: 0;
-	font-size: 0.62rem;
 	line-height: 1.3;
 	color: #8fb8bd;
 	text-align: center;
@@ -251,7 +248,6 @@ const order = computed(() => {
 
 .details-grid p {
 	margin: 0;
-	font-size: 0.9rem;
 }
 
 .details-grid span {
@@ -260,7 +256,16 @@ const order = computed(() => {
 }
 
 .missing-card {
-	font-size: 0.9rem;
+}
+
+:deep(.details-card.p-card) {
+	background: #073d45;
+	border: 1px solid #0f5660;
+	border-radius: 8px;
+}
+
+:deep(.details-card .p-card-body) {
+	padding: 1.2rem;
 }
 
 @media (max-width: 760px) {

@@ -1,86 +1,59 @@
 <template>
     <section class="login-page">
-        <div class="login-card">
-            <div class="brand">
-                <img class="brand-logo" src="/images/logo.png" alt="Nerevian" />
-            </div>
-
-            <form class="login-form" @submit.prevent>
-                <label class="field-label" for="email">Email address</label>
-                <div class="input-wrap">
-                    <span class="input-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" focusable="false">
-                            <path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="1.8" />
-                            <path d="M3 7l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.8" />
-                        </svg>
-                    </span>
-                    <input id="email" v-model="credentials.email" type="email" placeholder="example@nerevian.com" />
+        <Card class="login-card">
+            <template #content>
+                <div class="brand">
+                    <img class="brand-logo" src="/images/logo.png" alt="Nerevian" />
                 </div>
 
-                <label class="field-label" for="password">Password</label>
-                <div class="input-wrap">
-                    <span class="input-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" focusable="false">
-                            <rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" />
-                            <path d="M8 11V8a4 4 0 118 0v3" fill="none" stroke="currentColor" stroke-width="1.8" />
-                        </svg>
-                    </span>
-                    <input
-                        id="password"
-                        v-model="credentials.password"
-                        :type="showPassword ? 'text' : 'password'"
-                        placeholder="................"
-                    />
-                    <button
-                        type="button"
-                        class="password-toggle"
-                        :aria-label="showPassword ? 'Hide password' : 'Show password'"
-                        :aria-pressed="showPassword"
-                        @click="showPassword = !showPassword"
-                    >
-                        <svg v-if="showPassword" viewBox="0 0 24 24" focusable="false">
-                            <path
-                                d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                            />
-                            <circle cx="12" cy="12" r="2.7" fill="none" stroke="currentColor" stroke-width="1.8" />
-                        </svg>
-                        <svg v-else viewBox="0 0 24 24" focusable="false">
-                            <path
-                                d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.8"
-                            />
-                            <circle cx="12" cy="12" r="2.7" fill="none" stroke="currentColor" stroke-width="1.8" />
-                            <path d="M4 20L20 4" fill="none" stroke="currentColor" stroke-width="1.8" />
-                        </svg>
-                    </button>
-                </div>
+                <form class="login-form" @submit.prevent>
+                    <label class="field-label" for="email">Email address</label>
+                    <IconField class="input-wrap">
+                        <InputIcon class="pi pi-envelope input-icon" />
+                        <InputText
+                            id="email"
+                            v-model="credentials.email"
+                            type="email"
+                            placeholder="example@nerevian.com"
+                            class="text-field"
+                        />
+                    </IconField>
 
-                <button class="login-btn" type="submit">LOGIN</button>
-            </form>
-        </div>
+                    <label class="field-label" for="password">Password</label>
+                    <div class="password-wrap">
+                        <i class="pi pi-lock input-icon" aria-hidden="true"></i>
+                        <Password
+                            id="password"
+                            v-model="credentials.password"
+                            :feedback="false"
+                            toggleMask
+                            inputClass="text-field password-field"
+                            class="password-field-wrap"
+                        />
+                    </div>
+
+                    <Button label="LOGIN" type="submit" class="login-btn" />
+                </form>
+            </template>
+        </Card>
     </section>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-
-const showPassword = ref(false)
+import { reactive } from "vue"
 
 const credentials = reactive({
-    email: 'example@nerevian.com',
-    password: '...............'
+    email: "example@nerevian.com",
+    password: "...............",
 })
 </script>
 
 <style scoped>
 .login-page {
     min-height: 100vh;
-    background-image: linear-gradient(rgba(10, 58, 64, 0.53), rgba(10, 58, 64, 0.53)), url('/images/loginFoto.png');
+    background-image:
+        linear-gradient(rgba(10, 58, 64, 0.53), rgba(10, 58, 64, 0.53)),
+        url("/images/loginFoto.png");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -91,10 +64,6 @@ const credentials = reactive({
 
 .login-card {
     width: min(560px, 100%);
-    background: #f6f3e7;
-    border-radius: 6px;
-    padding: 2.45rem 3.25rem 3.05rem;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
 }
 
 .brand {
@@ -118,15 +87,16 @@ const credentials = reactive({
 .field-label {
     display: block;
     color: #181818;
-    font-size: 1.03rem;
     margin: 0 0 0.45rem;
 }
 
-.field-label + .input-wrap {
+.field-label + .input-wrap,
+.field-label + .password-wrap {
     margin-bottom: 0.95rem;
 }
 
-.input-wrap {
+.input-wrap,
+.password-wrap {
     height: 48px;
     border: 1px solid #75726f;
     border-radius: 7px;
@@ -142,62 +112,84 @@ const credentials = reactive({
     place-items: center;
 }
 
-.input-icon svg,
-.password-toggle svg {
-    width: 19px;
-    height: 19px;
-}
-
-.input-wrap input {
+.text-field {
+    width: 100%;
     border: none;
-    outline: none;
-    flex: 1;
-    min-width: 0;
     background: transparent;
     color: #222;
-    font-size: 1.03rem;
+    padding-inline: 0;
 }
 
-.input-wrap input::placeholder {
+.text-field::placeholder {
     color: #373737;
     opacity: 1;
 }
 
-.password-toggle {
-    border: none;
-    background: transparent;
-    color: #2b2b2b;
-    width: 38px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    padding: 0;
+.password-wrap {
+    padding-right: 0.2rem;
+}
+
+.password-field-wrap {
+    width: 100%;
 }
 
 .login-btn {
     margin-top: 1rem;
     width: 100%;
     height: 50px;
+}
+
+:deep(.login-card.p-card) {
+    background: #f6f3e7;
+    border-radius: 6px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+}
+
+:deep(.login-card .p-card-body) {
+    padding: 2.45rem 3.25rem 3.05rem;
+}
+
+:deep(.input-wrap .p-inputicon) {
+    position: static;
+    width: 38px;
+    min-width: 38px;
+    margin-top: 0;
+    margin-left: 0;
+}
+
+:deep(.input-wrap .p-inputtext) {
+    flex: 1;
+    min-width: 0;
+    box-shadow: none;
+}
+
+:deep(.password-field-wrap .p-password-input) {
+    box-shadow: none;
+}
+
+:deep(.password-field-wrap .p-iconfield) {
+    padding-left: 0;
+}
+
+:deep(.password-field-wrap .p-password-toggle-mask-icon) {
+    color: #2b2b2b;
+}
+
+:deep(.login-btn.p-button) {
     border: none;
     border-radius: 8px;
     background: #ff666d;
     color: #fff;
-    font-size: 1.65rem;
     letter-spacing: 1px;
-    cursor: pointer;
 }
 
-.login-btn:hover {
+:deep(.login-btn.p-button:hover) {
     background: #ff5b64;
 }
 
 @media (max-width: 640px) {
     .login-page {
         padding: 1rem;
-    }
-
-    .login-card {
-        padding: 1.6rem 1.2rem 1.8rem;
     }
 
     .brand {
@@ -208,16 +200,11 @@ const credentials = reactive({
         width: min(220px, 86%);
     }
 
-    .field-label {
-        font-size: 0.95rem;
+    :deep(.login-card .p-card-body) {
+        padding: 1.6rem 1.2rem 1.8rem;
     }
 
-    .input-wrap input {
-        font-size: 0.95rem;
-    }
-
-    .login-btn {
-        font-size: 1.2rem;
+    :deep(.login-btn.p-button) {
         height: 46px;
     }
 }

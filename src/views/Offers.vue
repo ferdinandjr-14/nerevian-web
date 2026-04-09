@@ -1,369 +1,371 @@
 <template>
-	<section class="offers-page">
-		<header class="offers-toolbar">
-			<button class="create-offer-btn" type="button" @click="goToCreateOffer">CREATE OFFER +</button>
+    <section class="offers-page">
+        <header class="offers-toolbar">
+            <Button label="CREATE OFFER +" class="create-offer-btn" @click="goToCreateOffer" />
 
-			<div class="toolbar-right">
-				<input
-					v-model="searchTerm"
-					class="search-input"
-					type="text"
-					placeholder="SEARCH BY ID"
-					aria-label="Search offers by id"
-				/>
+            <div class="toolbar-right">
+                <IconField class="search-wrap">
+                    <InputIcon class="pi pi-search" />
+                    <InputText
+                        v-model="searchTerm"
+                        class="search-input"
+                        type="text"
+                        placeholder="SEARCH BY ID"
+                        aria-label="Search offers by id"
+                    />
+                </IconField>
 
-				<select v-model="selectedStatus" class="filter-select" aria-label="Filter offers">
-					<option value="all">FILTER</option>
-					<option value="accepted">ACCEPTED</option>
-				</select>
-			</div>
-		</header>
+                <Select
+                    v-model="selectedStatus"
+                    :options="statusOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="filter-select"
+                    aria-label="Filter offers"
+                />
+            </div>
+        </header>
 
-		<div class="offers-list">
-			<article
-				v-for="offer in filteredOffers"
-				:key="offer.id"
-				:class="['offer-item', { expanded: expandedOfferId === offer.id }]"
-			>
-				<button class="offer-row" type="button" @click="toggleOffer(offer.id)">
-					<span class="offer-title">Offer <strong>#{{ offer.id }}</strong></span>
-					<span class="offer-status-wrap">
-						<span class="offer-status">{{ offer.status }}</span>
-						<span :class="['chevron', { up: expandedOfferId === offer.id }]">⌄</span>
-					</span>
-				</button>
+        <div class="offers-list">
+            <Accordion
+                v-if="filteredOffers.length"
+                v-model:value="expandedOfferId"
+                :multiple="false"
+                collapsible
+                class="offers-accordion"
+            >
+                <AccordionPanel
+                    v-for="offer in filteredOffers"
+                    :key="offer.id"
+                    :value="offer.id"
+                    class="offer-item"
+                >
+                    <AccordionHeader class="offer-row">
+                        <span class="offer-title">Offer <strong>#{{ offer.id }}</strong></span>
+                        <span class="offer-status">{{ offer.status }}</span>
+                    </AccordionHeader>
 
-				<div v-if="expandedOfferId === offer.id" class="offer-panel">
-					<div class="offer-meta-row">
-						<p><span>Customer:</span> <em>{{ offer.customer }}</em></p>
-						<p><span>Incoterm:</span> <em>{{ offer.incoterm }}</em></p>
-						<p><span>Cargo type:</span> <em>{{ offer.cargoType }}</em></p>
-						<p><span>Shipping Line:</span> <em>{{ offer.shippingLine }}</em></p>
-					</div>
+                    <AccordionContent>
+                        <div class="offer-panel">
+                            <div class="offer-meta-row">
+                                <p><span>Customer:</span> <em>{{ offer.customer }}</em></p>
+                                <p><span>Incoterm:</span> <em>{{ offer.incoterm }}</em></p>
+                                <p><span>Cargo type:</span> <em>{{ offer.cargoType }}</em></p>
+                                <p><span>Shipping Line:</span> <em>{{ offer.shippingLine }}</em></p>
+                            </div>
 
-					<div class="offer-route-row">
-						<p class="route-city">{{ offer.origin }}</p>
-						<span class="route-divider" aria-hidden="true"></span>
-						<span class="route-icon" aria-hidden="true">⚓</span>
-						<span class="route-arrow" aria-hidden="true">→</span>
-						<p class="route-city">{{ offer.destination }}</p>
+                            <div class="offer-route-row">
+                                <p class="route-city">{{ offer.origin }}</p>
+                                <span class="route-divider" aria-hidden="true"></span>
+                                <i class="pi pi-ship route-icon" aria-hidden="true"></i>
+                                <i class="pi pi-arrow-right route-arrow" aria-hidden="true"></i>
+                                <p class="route-city">{{ offer.destination }}</p>
 
-						<button
-							class="detail-link-btn"
-							type="button"
-							aria-label="View offer details"
-							@click.stop="goToOfferDetails(offer.id)"
-						>
-							→
-						</button>
-					</div>
-				</div>
-			</article>
+                                <Button
+                                    icon="pi pi-arrow-right"
+                                    class="detail-link-btn"
+                                    aria-label="View offer details"
+                                    @click="goToOfferDetails(offer.id)"
+                                />
+                            </div>
+                        </div>
+                    </AccordionContent>
+                </AccordionPanel>
+            </Accordion>
 
-			<p v-if="!filteredOffers.length" class="empty-state">No accepted offers found for this search.</p>
-		</div>
-	</section>
+            <p v-else class="empty-state">No accepted offers found for this search.</p>
+        </div>
+    </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { activeOffers } from '../data/offers'
+import { computed, ref, watch } from "vue"
+import { useRouter } from "vue-router"
+import { activeOffers } from "../data/offers"
 
 const router = useRouter()
 const offers = activeOffers
 
-const searchTerm = ref('')
-const selectedStatus = ref('all')
-const expandedOfferId = ref(offers[0].id)
+const statusOptions = [
+    { label: "FILTER", value: "all" },
+    { label: "ACCEPTED", value: "accepted" },
+]
+
+const searchTerm = ref("")
+const selectedStatus = ref("all")
+const expandedOfferId = ref(offers[0]?.id || null)
 
 const filteredOffers = computed(() => {
-	const query = searchTerm.value.trim().toLowerCase()
+    const query = searchTerm.value.trim().toLowerCase()
 
-	return offers.filter((offer) => {
-		if (!offer.isActive) return false
-		if (selectedStatus.value === 'accepted' && offer.status !== 'ACCEPTED') return false
-		if (!query) return true
-		return offer.id.toLowerCase().includes(query)
-	})
+    return offers.filter((offer) => {
+        if (!offer.isActive) return false
+        if (selectedStatus.value === "accepted" && offer.status !== "ACCEPTED") return false
+        if (!query) return true
+        return offer.id.toLowerCase().includes(query)
+    })
 })
 
-const toggleOffer = (id) => {
-	expandedOfferId.value = expandedOfferId.value === id ? null : id
-}
+watch(
+    filteredOffers,
+    (nextOffers) => {
+        if (!nextOffers.length) {
+            expandedOfferId.value = null
+            return
+        }
+
+        const exists = nextOffers.some((offer) => offer.id === expandedOfferId.value)
+        if (!exists) expandedOfferId.value = nextOffers[0].id
+    },
+    { immediate: true },
+)
 
 const goToCreateOffer = () => {
-	router.push({ name: 'create-offer' })
+    router.push({ name: "create-offer" })
 }
 
 const goToOfferDetails = (offerId) => {
-	router.push({ name: 'create-offer', query: { offerId } })
+    router.push({ name: "create-offer", query: { offerId } })
 }
 </script>
 
 <style scoped>
 .offers-page {
-	min-height: 100vh;
-	padding: 1.6rem;
-	background: #e8e8dd;
+    min-height: 100vh;
+    padding: 1.6rem;
+    background: #e8e8dd;
 }
 
 .offers-toolbar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 0.8rem;
-	margin-bottom: 0.75rem;
-}
-
-.create-offer-btn {
-	border: none;
-	border-radius: 6px;
-	background: #ff6666;
-	color: #fff;
-	font-size: 0.73rem;
-	letter-spacing: 0.45px;
-	padding: 0.55rem 0.95rem;
-	cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.75rem;
 }
 
 .toolbar-right {
-	display: flex;
-	align-items: center;
-	gap: 0.65rem;
-}
-
-.search-input {
-	width: 202px;
-	border: 1px solid #78979d;
-	border-radius: 4px;
-	height: 34px;
-	padding: 0 0.55rem;
-	font-size: 0.72rem;
-	background: transparent;
-	color: #0f353b;
-	text-transform: uppercase;
-}
-
-.search-input::placeholder {
-	color: #2d5860;
-}
-
-.filter-select {
-	height: 34px;
-	border: none;
-	border-radius: 4px;
-	padding: 0 1.85rem 0 0.8rem;
-	background: #1f9da8;
-	color: #fff;
-	font-size: 0.72rem;
-	letter-spacing: 0.45px;
-	cursor: pointer;
-	appearance: none;
-	position: relative;
-	background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
-	background-position: calc(100% - 13px) 14px, calc(100% - 8px) 14px;
-	background-size: 5px 5px, 5px 5px;
-	background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
 }
 
 .offers-list {
-	display: flex;
-	flex-direction: column;
-	gap: 0.56rem;
-}
-
-.offer-item {
-	border-radius: 10px;
-	overflow: hidden;
-}
-
-.offer-row {
-	width: 100%;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 1rem;
-	border: none;
-	background: #118c8c;
-	color: #ebf7f8;
-	min-height: 44px;
-	padding: 0.4rem 0.9rem;
-	cursor: pointer;
-	text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 0.56rem;
 }
 
 .offer-title {
-	font-size: 1.08rem;
-	line-height: 1;
+    line-height: 1;
 }
 
 .offer-title strong {
-	font-size: 1.26rem;
-	color: #8de4e8;
-	font-weight: 700;
-}
-
-.offer-status-wrap {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.52rem;
+    color: #8de4e8;
+    font-weight: 700;
 }
 
 .offer-status {
-	font-size: 0.75rem;
-	font-weight: 700;
-	color: #ffffff;
-	letter-spacing: 0.4px;
-	border: 1px solid #7dff7c;
-	border-radius: 999px;
-	padding: 0.15rem 0.45rem;
-	background: #20b860;
-}
-
-.chevron {
-	font-size: 1.15rem;
-	line-height: 1;
-	color: #d9f3f5;
-	transition: transform 0.2s ease;
-}
-
-.chevron.up {
-	transform: rotate(180deg);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.4px;
+    border: 1px solid #7dff7c;
+    border-radius: 999px;
+    padding: 0.15rem 0.45rem;
+    background: #20b860;
 }
 
 .offer-panel {
-	background: #abd2c7;
-	padding: 0.68rem 0.9rem 0.95rem;
-	border-radius: 0 0 10px 10px;
+    background: #abd2c7;
+    padding: 0.68rem 0.9rem 0.95rem;
+    border-radius: 0 0 10px 10px;
 }
 
 .offer-meta-row {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(130px, 1fr));
-	gap: 0.55rem;
-	margin-bottom: 0.85rem;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
 }
 
 .offer-meta-row p {
-	margin: 0;
-	font-size: 0.72rem;
-	color: #1a4248;
-	white-space: nowrap;
+    margin: 0;
+    color: #1a4248;
+    white-space: nowrap;
 }
 
 .offer-meta-row span {
-	color: #274b51;
-	font-weight: 500;
-	margin-right: 0.2rem;
+    color: #274b51;
+    font-weight: 500;
+    margin-right: 0.2rem;
 }
 
 .offer-meta-row em {
-	font-style: normal;
-	background: #f3f0e8;
-	border-radius: 4px;
-	padding: 0.15rem 0.4rem;
-	color: #223d42;
-	font-size: 0.67rem;
+    font-style: normal;
+    background: #f3f0e8;
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    color: #223d42;
 }
 
 .offer-route-row {
-	display: grid;
-	grid-template-columns: 1fr auto auto auto 1fr auto;
-	align-items: center;
-	gap: 0.6rem;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto 1fr auto;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 .route-city {
-	margin: 0;
-	font-size: 2rem;
-	color: #184a52;
-	font-weight: 500;
-	letter-spacing: 0.5px;
-	line-height: 1;
-	text-align: center;
+    margin: 0;
+    color: #184a52;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    text-align: center;
 }
 
 .route-divider {
-	width: 58px;
-	height: 1px;
-	background: #417278;
+    width: 58px;
+    height: 1px;
+    background: #417278;
 }
 
 .route-icon {
-	font-size: 2rem;
-	color: #1b9399;
-	line-height: 1;
+    color: #1b9399;
+    line-height: 1;
 }
 
 .route-arrow {
-	font-size: 1.4rem;
-	color: #2b6368;
-	line-height: 1;
-}
-
-.detail-link-btn {
-	border: none;
-	background: #ff6666;
-	color: #fff;
-	width: 34px;
-	height: 30px;
-	border-radius: 7px;
-	font-size: 1.15rem;
-	line-height: 1;
-	cursor: pointer;
+    color: #2b6368;
+    line-height: 1;
 }
 
 .empty-state {
-	margin-top: 1.1rem;
-	font-size: 0.88rem;
-	color: #1a474e;
+    margin-top: 1.1rem;
+    color: #1a474e;
+}
+
+:deep(.create-offer-btn.p-button) {
+    border: none;
+    border-radius: 6px;
+    background: #ff6666;
+    color: #fff;
+    letter-spacing: 0.45px;
+    padding: 0.55rem 0.95rem;
+}
+
+:deep(.search-wrap .p-inputicon) {
+    color: #2d5860;
+}
+
+:deep(.search-input.p-inputtext) {
+    width: 202px;
+    border: 1px solid #78979d;
+    border-radius: 4px;
+    height: 34px;
+    padding-left: 2.1rem;
+    background: transparent;
+    color: #0f353b;
+    text-transform: uppercase;
+}
+
+:deep(.search-input.p-inputtext::placeholder) {
+    color: #2d5860;
+}
+
+:deep(.filter-select.p-select) {
+    height: 34px;
+    min-width: 122px;
+    border: none;
+    border-radius: 4px;
+    background: #1f9da8;
+    color: #fff;
+    letter-spacing: 0.45px;
+}
+
+:deep(.filter-select .p-select-label) {
+    color: #fff;
+}
+
+:deep(.filter-select .p-select-dropdown) {
+    color: #fff;
+}
+
+:deep(.offers-accordion.p-accordion) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.56rem;
+}
+
+:deep(.offer-item.p-accordionpanel) {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+:deep(.offer-row.p-accordionheader) {
+    background: #118c8c;
+    color: #ebf7f8;
+}
+
+:deep(.offer-row .p-accordionheader-toggle-icon) {
+    color: #d9f3f5;
+}
+
+:deep(.offer-row .p-accordionheader-content) {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    min-height: 44px;
+    padding: 0.4rem 0.9rem;
+}
+
+:deep(.offer-item .p-accordioncontent-content) {
+    padding: 0;
+    border: none;
+}
+
+:deep(.detail-link-btn.p-button) {
+    border: none;
+    background: #ff6666;
+    color: #fff;
+    width: 34px;
+    height: 30px;
+    border-radius: 7px;
+    min-width: 34px;
+    padding: 0;
 }
 
 @media (max-width: 980px) {
-	.offers-toolbar {
-		flex-direction: column;
-		align-items: stretch;
-	}
+    .offers-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-	.toolbar-right {
-		width: 100%;
-	}
+    .toolbar-right {
+        width: 100%;
+    }
 
-	.search-input,
-	.filter-select {
-		width: 100%;
-	}
+    :deep(.search-input.p-inputtext),
+    :deep(.filter-select.p-select) {
+        width: 100%;
+    }
 
-	.offer-title {
-		font-size: 0.95rem;
-	}
+    .offer-meta-row {
+        grid-template-columns: 1fr 1fr;
+    }
 
-	.offer-title strong {
-		font-size: 1.08rem;
-	}
+    .offer-route-row {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 0.35rem;
+    }
 
-	.offer-meta-row {
-		grid-template-columns: 1fr 1fr;
-	}
-
-	.offer-route-row {
-		grid-template-columns: 1fr;
-		justify-items: center;
-		gap: 0.35rem;
-	}
-
-	.route-city {
-		font-size: 1.2rem;
-	}
-
-	.route-divider,
-	.route-arrow {
-		display: none;
-	}
-
-	.detail-link-btn {
-		margin-top: 0.4rem;
-	}
+    .route-divider,
+    .route-arrow {
+        display: none;
+    }
 }
 </style>
