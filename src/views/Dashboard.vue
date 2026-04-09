@@ -1,12 +1,12 @@
 <template>
     <section class="dashboard-page">
         <div class="stats-grid">
-            <Card v-for="card in statsCards" :key="card.label" class="stat-card">
-                <template #content>
-                    <p class="stat-label">{{ card.label }}</p>
-                    <p class="stat-value">{{ card.value }}</p>
-                </template>
-            </Card>
+            <CardInfo
+                v-for="card in statsCards"
+                :key="card.label"
+                :label="card.label"
+                :value="card.value"
+            />
         </div>
 
         <div class="content-grid">
@@ -21,6 +21,8 @@
                         paginator
                         :rows="5"
                         :rowsPerPageOptions="[5, 10, 20]"
+                        scrollable
+                        scrollHeight="24rem"
                         paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
                         currentPageReportTemplate="Showing {first}-{last} of {totalRecords} results"
                     >
@@ -85,6 +87,7 @@
 <script setup>
 import { ref } from "vue"
 import { FilterMatchMode } from "@primevue/core/api"
+import CardInfo from "../components/CardInfo.vue"
 
 const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -150,23 +153,6 @@ const statusClass = (status) => {
 .panel {
     border-radius: 8px;
     overflow: hidden;
-}
-
-.stat-label {
-    text-transform: uppercase;
-    margin: 0;
-    color: #d4e6e8;
-    letter-spacing: 0.4px;
-    background: #084953;
-    border-radius: 6px;
-    padding: 0.6rem 0.4rem;
-    font-weight: 600;
-}
-
-.stat-value {
-    margin: 0.85rem 0 0.55rem;
-    text-align: center;
-    color: #eef7f7;
 }
 
 .table-header {
@@ -245,26 +231,12 @@ const statusClass = (status) => {
     gap: 0.85rem;
 }
 
-.alert-title {
-    margin: 0 0 0.2rem;
-    color: #ffd1d1;
-    font-weight: 700;
-}
-
-.alert-text {
-    margin: 0;
-    color: #8fb1b6;
-    line-height: 1.35;
-}
-
-:deep(.stat-card.p-card),
 :deep(.panel.p-card) {
     background: #073d45;
     border: 1px solid #0f5660;
     border-radius: 8px;
 }
 
-:deep(.stat-card .p-card-body),
 :deep(.panel .p-card-body),
 :deep(.alert-card .p-card-body) {
     padding: 0.6rem;
@@ -276,6 +248,10 @@ const statusClass = (status) => {
 
 :deep(.shipments-table .p-datatable-table) {
     min-width: 700px;
+}
+
+:deep(.shipments-table .p-datatable-table-container) {
+    min-height: 24rem;
 }
 
 :deep(.shipments-table .p-datatable-header) {
