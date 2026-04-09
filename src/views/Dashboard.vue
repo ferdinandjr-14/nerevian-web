@@ -15,7 +15,7 @@
                     <DataTable
                         v-model:filters="tableFilters"
                         :value="shipments"
-                        :globalFilterFields="['id', 'carrier', 'route', 'status', 'eta']"
+                        :globalFilterFields="['id', 'carrier', 'route', 'statusLabel', 'eta']"
                         class="shipments-table"
                         dataKey="id"
                         paginator
@@ -32,7 +32,7 @@
                                     <InputIcon class="pi pi-search" />
                                     <InputText
                                         v-model="tableFilters.global.value"
-                                        placeholder="Search shipments"
+                                        placeholder="Search offers"
                                     />
                                 </IconField>
                             </div>
@@ -47,37 +47,23 @@
                             </template>
                         </Column>
                         <Column field="route" header="Route" sortable />
-                        <Column field="status" header="Current Status" sortable>
+                        <Column field="statusLabel" header="Current Status" sortable>
                             <template #body="{ data }">
-                                <span :class="['status-pill', statusClass(data.status)]">
-                                    {{ data.status }}
-                                </span>
+                                <StatusBadge :status-id="data.statusId" />
                             </template>
                         </Column>
                         <Column field="eta" header="ETA" sortable />
                         <Column header="Action">
-                            <template #body>
-                                <Button label="View details" text class="details-btn" />
+                            <template #body="{ data }">
+                                <Button
+                                    label="View details"
+                                    text
+                                    class="details-btn"
+                                    @click="goToOfferDetails(data.offerId)"
+                                />
                             </template>
                         </Column>
                     </DataTable>
-                </template>
-            </Card>
-
-            <Card class="panel alerts-panel">
-                <template #content>
-                    <div class="alerts-title-wrap">
-                        <h3>Alerts</h3>
-                    </div>
-
-                    <div class="alerts-list">
-                        <Card v-for="alert in alerts" :key="alert.id" class="alert-card">
-                            <template #content>
-                                <p class="alert-title">{{ alert.title }}</p>
-                                <p class="alert-text">{{ alert.message }}</p>
-                            </template>
-                        </Card>
-                    </div>
                 </template>
             </Card>
         </div>
@@ -85,48 +71,59 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
+import { computed, ref } from "vue"
+import { useRouter } from "vue-router"
 import { FilterMatchMode } from "@primevue/core/api"
 import CardInfo from "../components/CardInfo.vue"
+import StatusBadge from "../components/StatusBadge.vue"
+import { offers, OFFER_STATUS_IDS } from "../data/offers"
+
+const router = useRouter()
 
 const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const statsCards = [
-    { label: "Total Orders", value: "9 672" },
-    { label: "Pending Orders", value: "1 672" },
-    { label: "Active Orders", value: "1 051" },
-    { label: "Rejected Orders", value: "1 051" },
-    { label: "Orders Delivered", value: "6301" },
+const ACTIVE_STATUS_IDS = [
+    OFFER_STATUS_IDS.ACCEPTED,
+    OFFER_STATUS_IDS.SHIPPED,
+    OFFER_STATUS_IDS.DELAYED,
+    OFFER_STATUS_IDS.IN_TRANSIT,
+    OFFER_STATUS_IDS.OUT_FOR_DELIVERY,
 ]
 
-const shipments = [
-    { id: "#SHP-9821", carrier: "Carrier: Maersk Line", route: "Rotterdam, NL -> Barcelona, ES", status: "In Transit", eta: "21/10/2026" },
-    { id: "#SHP-7734", carrier: "Carrier: DHL Express", route: "Barcelona, ES -> London, UK", status: "Delayed", eta: "21/10/2026" },
-    { id: "#SHP-4412", carrier: "Carrier: FedEx", route: "Shenzhen, CN -> Barcelona, ES", status: "Pending", eta: "21/10/2026" },
-    { id: "#SHP-1082", carrier: "Carrier: Cargo-Lloyd", route: "Mumbai, IN -> Barcelona, ES", status: "In Transit", eta: "21/10/2026" },
-    { id: "#SHP-3381", carrier: "Carrier: UPS Global", route: "Barcelona, ES -> Tokyo, JP", status: "In Transit", eta: "21/10/2026" },
-    { id: "#SHP-1290", carrier: "Carrier: Evergreen Marine", route: "Valencia, ES -> New York, US", status: "In Transit", eta: "22/10/2026" },
-    { id: "#SHP-5517", carrier: "Carrier: COSCO Shipping", route: "Qingdao, CN -> Genoa, IT", status: "Pending", eta: "23/10/2026" },
-    { id: "#SHP-9142", carrier: "Carrier: MSC", route: "Santos, BR -> Algeciras, ES", status: "Delayed", eta: "24/10/2026" },
-    { id: "#SHP-6403", carrier: "Carrier: Hapag-Lloyd", route: "Hamburg, DE -> Montreal, CA", status: "In Transit", eta: "25/10/2026" },
-    { id: "#SHP-7731", carrier: "Carrier: CMA CGM", route: "Marseille, FR -> Casablanca, MA", status: "Pending", eta: "26/10/2026" },
-    { id: "#SHP-2069", carrier: "Carrier: ONE", route: "Singapore, SG -> Sydney, AU", status: "In Transit", eta: "27/10/2026" },
-    { id: "#SHP-4876", carrier: "Carrier: Yang Ming", route: "Kaohsiung, TW -> Seattle, US", status: "Delayed", eta: "28/10/2026" },
-]
+const countByStatus = (statusId) => offers.filter((offer) => offer.estatOfertaId === statusId).length
 
-const alerts = [
-    { id: 1, title: "Alert: Shipment #4928 Delayed", message: "Stuck at Port of Los Angeles due to terminal congestion." },
-    { id: 2, title: "Alert: Shipment #7734 Customs Hold", message: "Awaiting customs inspection documents in London terminal." },
-    { id: 3, title: "Alert: Shipment #1082 Weather Alert", message: "Route updated because of heavy monsoon conditions near Mumbai." },
-    { id: 4, title: "Alert: Shipment #3381 Capacity Issue", message: "Transfer delayed 12h while reassigned to a larger vessel." },
-]
+const statsCards = computed(() => {
+    const totalOffers = offers.length
+    const pendingOffers = countByStatus(OFFER_STATUS_IDS.PENDING)
+    const activeOffers = offers.filter((offer) => ACTIVE_STATUS_IDS.includes(offer.estatOfertaId)).length
+    const rejectedOffers = countByStatus(OFFER_STATUS_IDS.REJECTED)
+    const finalizedOffers = countByStatus(OFFER_STATUS_IDS.FINALIZED)
 
-const statusClass = (status) => {
-    if (status === "In Transit") return "status-transit"
-    if (status === "Delayed") return "status-delayed"
-    return "status-pending"
+    return [
+        { label: "Total Offers", value: totalOffers.toLocaleString("en-US") },
+        { label: "Pending Offers", value: pendingOffers.toLocaleString("en-US") },
+        { label: "Active Offers", value: activeOffers.toLocaleString("en-US") },
+        { label: "Rejected Offers", value: rejectedOffers.toLocaleString("en-US") },
+        { label: "Finalized Offers", value: finalizedOffers.toLocaleString("en-US") },
+    ]
+})
+
+const shipments = computed(() =>
+    offers.map((offer) => ({
+        id: `#OFF-${offer.id}`,
+        offerId: offer.id,
+        carrier: `Carrier: ${offer.shippingLineName || offer.inlandCarrierName || "-"}`,
+        route: `${offer.originLabel} -> ${offer.destinationLabel}`,
+        statusId: offer.estatOfertaId,
+        statusLabel: offer.statusLabel,
+        eta: offer.eta || "-",
+    })),
+)
+
+const goToOfferDetails = (offerId) => {
+    router.push({ name: "create-offer", query: { offerId: String(offerId) } })
 }
 </script>
 
@@ -146,7 +143,7 @@ const statusClass = (status) => {
 
 .content-grid {
     display: grid;
-    grid-template-columns: 1fr 250px;
+    grid-template-columns: 1fr;
     gap: 0.65rem;
 }
 
@@ -175,70 +172,13 @@ const statusClass = (status) => {
     color: #7ca6ab;
 }
 
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid transparent;
-    white-space: nowrap;
-}
-
-.status-transit {
-    background: rgba(32, 178, 120, 0.18);
-    border-color: rgba(32, 178, 120, 0.45);
-    color: #6ee6a9;
-}
-
-.status-delayed {
-    background: rgba(255, 184, 0, 0.15);
-    border-color: rgba(255, 184, 0, 0.45);
-    color: #ffd769;
-}
-
-.status-pending {
-    background: rgba(139, 167, 183, 0.18);
-    border-color: rgba(139, 167, 183, 0.4);
-    color: #b4ccd7;
-}
-
-.alerts-panel {
-    display: flex;
-    flex-direction: column;
-}
-
-.alerts-title-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 0.75rem 0.75rem 0.2rem;
-}
-
-.alerts-title-wrap h3 {
-    margin: 0;
-    background: #ff4b4b;
-    color: #fff;
-    border-radius: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    padding: 0.35rem 1rem;
-}
-
-.alerts-list {
-    padding: 0.7rem;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-}
-
 :deep(.panel.p-card) {
     background: #073d45;
     border: 1px solid #0f5660;
     border-radius: 8px;
 }
 
-:deep(.panel .p-card-body),
-:deep(.alert-card .p-card-body) {
+:deep(.panel .p-card-body) {
     padding: 0.6rem;
 }
 
@@ -310,28 +250,9 @@ const statusClass = (status) => {
     color: #3dd0da;
 }
 
-:deep(.alert-card.p-card) {
-    border-left: 2px solid #ff3d49;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0 6px 6px 0;
-    border-top: none;
-    border-right: none;
-    border-bottom: none;
-}
-
 @media (max-width: 1100px) {
     .stats-grid {
         grid-template-columns: repeat(3, minmax(140px, 1fr));
-    }
-
-    .content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .alerts-list {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
-        gap: 0.5rem;
     }
 }
 
@@ -342,10 +263,6 @@ const statusClass = (status) => {
 
     .stats-grid {
         grid-template-columns: repeat(2, minmax(130px, 1fr));
-    }
-
-    .alerts-list {
-        grid-template-columns: 1fr;
     }
 }
 </style>

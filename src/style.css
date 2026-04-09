@@ -34,6 +34,42 @@
     --color-nrv-text-600: #184a52;
     --color-nrv-text-500: #183e44;
     --color-nrv-text-400: #163c43;
+
+    --color-status-pending-bg: rgba(143, 184, 189, 0.18);
+    --color-status-pending-border: #8fb8bd;
+    --color-status-pending-text: #1f4d53;
+
+    --color-status-accepted-bg: rgba(32, 184, 96, 0.18);
+    --color-status-accepted-border: #20b860;
+    --color-status-accepted-text: #0d8e45;
+
+    --color-status-rejected-bg: rgba(255, 75, 75, 0.16);
+    --color-status-rejected-border: #ff4b4b;
+    --color-status-rejected-text: #9d2a2a;
+
+    --color-status-shipped-bg: rgba(61, 208, 218, 0.18);
+    --color-status-shipped-border: #1ab1bb;
+    --color-status-shipped-text: #0b5960;
+
+    --color-status-delayed-bg: rgba(255, 215, 105, 0.2);
+    --color-status-delayed-border: #ffd769;
+    --color-status-delayed-text: #8a6000;
+
+    --color-status-finalized-bg: rgba(31, 77, 83, 0.18);
+    --color-status-finalized-border: #1f4d53;
+    --color-status-finalized-text: #10363b;
+
+    --color-status-in-transit-bg: rgba(31, 157, 168, 0.2);
+    --color-status-in-transit-border: #1f9da8;
+    --color-status-in-transit-text: #0f4e56;
+
+    --color-status-out-for-delivery-bg: rgba(255, 138, 76, 0.2);
+    --color-status-out-for-delivery-border: #ff8a4c;
+    --color-status-out-for-delivery-text: #8a4e18;
+
+    --color-status-unknown-bg: rgba(122, 149, 154, 0.18);
+    --color-status-unknown-border: #7a959a;
+    --color-status-unknown-text: #2f474b;
 }
 
 :root {
@@ -62,6 +98,42 @@
     --nrv-text-600: #184a52;
     --nrv-text-500: #183e44;
     --nrv-text-400: #163c43;
+
+    --status-pending-bg: rgba(143, 184, 189, 0.18);
+    --status-pending-border: #8fb8bd;
+    --status-pending-text: #1f4d53;
+
+    --status-accepted-bg: rgba(32, 184, 96, 0.18);
+    --status-accepted-border: #20b860;
+    --status-accepted-text: #0d8e45;
+
+    --status-rejected-bg: rgba(255, 75, 75, 0.16);
+    --status-rejected-border: #ff4b4b;
+    --status-rejected-text: #9d2a2a;
+
+    --status-shipped-bg: rgba(61, 208, 218, 0.18);
+    --status-shipped-border: #1ab1bb;
+    --status-shipped-text: #0b5960;
+
+    --status-delayed-bg: rgba(255, 215, 105, 0.2);
+    --status-delayed-border: #ffd769;
+    --status-delayed-text: #8a6000;
+
+    --status-finalized-bg: rgba(31, 77, 83, 0.18);
+    --status-finalized-border: #1f4d53;
+    --status-finalized-text: #10363b;
+
+    --status-in-transit-bg: rgba(31, 157, 168, 0.2);
+    --status-in-transit-border: #1f9da8;
+    --status-in-transit-text: #0f4e56;
+
+    --status-out-for-delivery-bg: rgba(255, 138, 76, 0.2);
+    --status-out-for-delivery-border: #ff8a4c;
+    --status-out-for-delivery-text: #8a4e18;
+
+    --status-unknown-bg: rgba(122, 149, 154, 0.18);
+    --status-unknown-border: #7a959a;
+    --status-unknown-text: #2f474b;
 }
 
 * {
@@ -70,4 +142,70 @@
 
 body {
     background-color: var(--color-primary);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.status-badge--pending {
+    background: var(--status-pending-bg);
+    border-color: var(--status-pending-border);
+    color: var(--status-pending-text);
+}
+
+.status-badge--accepted {
+    background: var(--status-accepted-bg);
+    border-color: var(--status-accepted-border);
+    color: var(--status-accepted-text);
+}
+
+.status-badge--rejected {
+    background: var(--status-rejected-bg);
+    border-color: var(--status-rejected-border);
+    color: var(--status-rejected-text);
+}
+
+.status-badge--shipped {
+    background: var(--status-shipped-bg);
+    border-color: var(--status-shipped-border);
+    color: var(--status-shipped-text);
+}
+
+.status-badge--delayed {
+    background: var(--status-delayed-bg);
+    border-color: var(--status-delayed-border);
+    color: var(--status-delayed-text);
+}
+
+.status-badge--finalized {
+    background: var(--status-finalized-bg);
+    border-color: var(--status-finalized-border);
+    color: var(--status-finalized-text);
+}
+
+.status-badge--in-transit {
+    background: var(--status-in-transit-bg);
+    border-color: var(--status-in-transit-border);
+    color: var(--status-in-transit-text);
+}
+
+.status-badge--out-for-delivery {
+    background: var(--status-out-for-delivery-bg);
+    border-color: var(--status-out-for-delivery-border);
+    color: var(--status-out-for-delivery-text);
+}
+
+.status-badge--unknown {
+    background: var(--status-unknown-bg);
+    border-color: var(--status-unknown-border);
+    color: var(--status-unknown-text);
 }

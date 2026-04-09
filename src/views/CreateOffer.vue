@@ -197,7 +197,7 @@
 <script setup>
 import { reactive, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { createEmptyOfferForm, getOfferById } from "../data/offers"
+import { createEmptyOfferForm, getOfferById, OFFER_STATUS_IDS } from "../data/offers"
 
 const route = useRoute()
 const router = useRouter()
@@ -245,7 +245,7 @@ const loadOfferFromRoute = () => {
 
     applyFormData(selectedOffer.formData)
     documents.value = mapDocuments(selectedOffer.documents)
-    isAccepted.value = selectedOffer.status === "ACCEPTED"
+    isAccepted.value = selectedOffer.estatOfertaId === OFFER_STATUS_IDS.ACCEPTED
     uploadFeedback.value = documents.value.length ? `${documents.value.length} document(s) loaded.` : ""
 }
 

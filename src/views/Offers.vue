@@ -42,24 +42,24 @@
                 >
                     <AccordionHeader class="offer-row">
                         <span class="offer-title">Offer <strong>#{{ offer.id }}</strong></span>
-                        <span class="offer-status">{{ offer.status }}</span>
+                        <StatusBadge :status-id="offer.estatOfertaId" />
                     </AccordionHeader>
 
                     <AccordionContent>
                         <div class="offer-panel">
                             <div class="offer-meta-row">
-                                <p><span>Customer:</span> <em>{{ offer.customer }}</em></p>
-                                <p><span>Incoterm:</span> <em>{{ offer.incoterm }}</em></p>
-                                <p><span>Cargo type:</span> <em>{{ offer.cargoType }}</em></p>
-                                <p><span>Shipping Line:</span> <em>{{ offer.shippingLine }}</em></p>
+                                <p><span>Customer:</span> <em>{{ offer.clientName }}</em></p>
+                                <p><span>Incoterm:</span> <em>{{ offer.incotermCode }}</em></p>
+                                <p><span>Cargo type:</span> <em>{{ offer.cargoTypeLabel }}</em></p>
+                                <p><span>Shipping Line:</span> <em>{{ offer.shippingLineName }}</em></p>
                             </div>
 
                             <div class="offer-route-row">
-                                <p class="route-city">{{ offer.origin }}</p>
+                                <p class="route-city">{{ offer.originLabel }}</p>
                                 <span class="route-divider" aria-hidden="true"></span>
                                 <i class="pi pi-ship route-icon" aria-hidden="true"></i>
                                 <i class="pi pi-arrow-right route-arrow" aria-hidden="true"></i>
-                                <p class="route-city">{{ offer.destination }}</p>
+                                <p class="route-city">{{ offer.destinationLabel }}</p>
 
                                 <Button
                                     icon="pi pi-arrow-right"
@@ -73,7 +73,7 @@
                 </AccordionPanel>
             </Accordion>
 
-            <p v-else class="empty-state">No accepted offers found for this search.</p>
+            <p v-else class="empty-state">No offers found for this search.</p>
         </div>
     </section>
 </template>
@@ -81,14 +81,17 @@
 <script setup>
 import { computed, ref, watch } from "vue"
 import { useRouter } from "vue-router"
-import { activeOffers } from "../data/offers"
+import StatusBadge from "../components/StatusBadge.vue"
+import { offers, OFFER_STATUSES } from "../data/offers"
 
 const router = useRouter()
-const offers = activeOffers
 
 const statusOptions = [
-    { label: "FILTER", value: "all" },
-    { label: "ACCEPTED", value: "accepted" },
+    { label: "ALL STATUSES", value: "all" },
+    ...OFFER_STATUSES.map((status) => ({
+        label: status.label.toUpperCase(),
+        value: status.id,
+    })),
 ]
 
 const searchTerm = ref("")
@@ -99,10 +102,9 @@ const filteredOffers = computed(() => {
     const query = searchTerm.value.trim().toLowerCase()
 
     return offers.filter((offer) => {
-        if (!offer.isActive) return false
-        if (selectedStatus.value === "accepted" && offer.status !== "ACCEPTED") return false
+        if (selectedStatus.value !== "all" && offer.estatOfertaId !== selectedStatus.value) return false
         if (!query) return true
-        return offer.id.toLowerCase().includes(query)
+        return String(offer.id).toLowerCase().includes(query)
     })
 })
 
@@ -125,7 +127,7 @@ const goToCreateOffer = () => {
 }
 
 const goToOfferDetails = (offerId) => {
-    router.push({ name: "create-offer", query: { offerId } })
+    router.push({ name: "create-offer", query: { offerId: String(offerId) } })
 }
 </script>
 
@@ -163,16 +165,6 @@ const goToOfferDetails = (offerId) => {
 .offer-title strong {
     color: #8de4e8;
     font-weight: 700;
-}
-
-.offer-status {
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.4px;
-    border: 1px solid #7dff7c;
-    border-radius: 999px;
-    padding: 0.15rem 0.45rem;
-    background: #20b860;
 }
 
 .offer-panel {
@@ -275,7 +267,7 @@ const goToOfferDetails = (offerId) => {
 
 :deep(.filter-select.p-select) {
     height: 34px;
-    min-width: 122px;
+    min-width: 155px;
     border: none;
     border-radius: 4px;
     background: #1f9da8;
