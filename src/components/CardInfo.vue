@@ -1,8 +1,10 @@
 <template>
-    <Card class="card-info">
+    <Card class="bg-secondary rounded-lg px-2 pb-2">
         <template #content>
-            <p class="stat-label">{{ label }}</p>
-            <p class="stat-value">{{ value }}</p>
+            <p class="text-primary uppercase text-center pt-3 pb-2">{{ label }}</p>
+            <p class="text-primary text-center text-4xl bg-secondary-muted py-6 rounded-b-lg">
+                {{ value }}
+            </p>
         </template>
     </Card>
 </template>
@@ -20,31 +22,4 @@ defineProps({
 })
 </script>
 
-<style scoped>
-.stat-label {
-    text-transform: uppercase;
-    margin: 0;
-    color: #d4e6e8;
-    letter-spacing: 0.4px;
-    background: #084953;
-    border-radius: 6px;
-    padding: 0.6rem 0.4rem;
-    font-weight: 600;
-}
-
-.stat-value {
-    margin: 0.85rem 0 0.55rem;
-    text-align: center;
-    color: #eef7f7;
-}
-
-:deep(.card-info.p-card) {
-    background: #073d45;
-    border: 1px solid #0f5660;
-    border-radius: 8px;
-}
-
-:deep(.card-info .p-card-body) {
-    padding: 0.6rem;
-}
-</style>
+<style scoped></style>
