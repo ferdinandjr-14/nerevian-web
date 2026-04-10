@@ -1,90 +1,65 @@
 <template>
   <section class="dashboard bg-primary">
     <div class="stats-grid">
-      <article v-for="card in statsCards" :key="card.label" class="stat-card">
-        <p class="stat-label">{{ card.label }}</p>
-        <p class="stat-value">{{ card.value }}</p>
-      </article>
+      <StatCard
+        v-for="card in statsCards"
+        :key="card.label"
+        :label="card.label"
+        :value="card.value"
+      />
     </div>
 
     <div class="content-grid">
       <section class="panel table-panel">
-        <div class="table-head">
-          <span v-for="column in dashboardMeta.tableColumns" :key="column">{{ column }}</span>
-        </div>
+        <DataTable
+          :value="shipments"
+          paginator
+          :rows="5"
+          tableStyle="width: 100%"
+        >
+          <Column field="id" header="ID">
+            <template #body="{ data }">
+              <div class="shipment-cell">
+                <p class="shipment-id">{{ data.id }}</p>
+                <p class="shipment-meta">{{ data.carrier }}</p>
+              </div>
+            </template>
+          </Column>
 
-        <div class="table-body">
-          <div v-for="row in paginatedShipments" :key="row.id" class="table-row">
-            <div class="shipment-cell">
-              <p class="shipment-id">{{ row.id }}</p>
-              <p class="shipment-meta">{{ row.carrier }}</p>
-            </div>
+          <Column field="route" header="Route">
+            <template #body="{ data }">
+              <p class="route">{{ data.route }}</p>
+            </template>
+          </Column>
 
-            <p class="route">{{ row.route }}</p>
-
-            <div>
-              <span :class="['status-pill', statusClass(row.status)]">
-                {{ row.status }}
+          <Column field="status" header="Current Status">
+            <template #body="{ data }">
+              <span :class="['status-pill', statusClass(data.status)]">
+                {{ data.status }}
               </span>
-            </div>
+            </template>
+          </Column>
 
-            <p>{{ row.eta }}</p>
+          <Column field="eta" header="ETA" />
 
-            <button class="details-btn" type="button">{{ dashboardMeta.detailsButtonLabel }}</button>
-          </div>
-        </div>
-
-        <footer class="table-footer">
-          <p>{{ paginationLabel }}</p>
-
-          <div class="pagination">
-            <button type="button" :disabled="currentPage === 1" @click="goToPreviousPage">
-              {{ dashboardMeta.paginationSymbols.previous }}
-            </button>
-            <button
-              v-for="page in pageNumbers"
-              :key="page"
-              type="button"
-              :class="{ active: page === currentPage }"
-              @click="goToPage(page)"
-            >
-              {{ page }}
-            </button>
-            <button type="button" :disabled="currentPage === totalPages" @click="goToNextPage">
-              {{ dashboardMeta.paginationSymbols.next }}
-            </button>
-          </div>
-        </footer>
+          <Column header="Action">
+            <template #body>
+              <button class="details-btn" type="button">View details</button>
+            </template>
+          </Column>
+        </DataTable>
       </section>
 
-      <aside class="panel alerts-panel">
-        <div class="alerts-title-wrap">
-          <h3>{{ dashboardMeta.alertsTitle }}</h3>
-        </div>
-
-        <div class="alerts-list">
-          <article v-for="alert in alerts" :key="alert.id" class="alert-card">
-            <p class="alert-title">{{ alert.title }}</p>
-            <p class="alert-text">{{ alert.message }}</p>
-          </article>
-        </div>
-      </aside>
+      <AlertList :alerts="alerts" title="Alerts" />
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-
-const dashboardMeta = {
-  tableColumns: ['ID', 'Route', 'Current Status', 'ETA', 'Action'],
-  detailsButtonLabel: 'View details',
-  alertsTitle: 'Alerts',
-  paginationSymbols: {
-    previous: '‹',
-    next: '›'
-  }
-}
+import StatCard from '../components/StatCard.vue'
+import AlertList from '../components/AlertList.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 const statsCards = [
   { label: 'Total Orders', value: '9 672' },
@@ -315,41 +290,6 @@ const alerts = [
     message: 'Transfer delayed 12h while reassigned to a larger vessel.'
   }
 ]
-
-const itemsPerPage = 5
-const currentPage = ref(1)
-
-const totalResults = computed(() => shipments.length)
-const totalPages = computed(() => Math.ceil(totalResults.value / itemsPerPage))
-
-const paginatedShipments = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return shipments.slice(start, end)
-})
-
-const pageNumbers = computed(() => Array.from({ length: totalPages.value }, (_, index) => index + 1))
-
-const paginationLabel = computed(() => {
-  if (totalResults.value === 0) return 'Showing 0 results'
-
-  const start = (currentPage.value - 1) * itemsPerPage + 1
-  const end = Math.min(currentPage.value * itemsPerPage, totalResults.value)
-  return `Showing ${start}-${end} of ${totalResults.value} results`
-})
-
-const goToPage = (page) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
-}
-
-const goToPreviousPage = () => {
-  goToPage(currentPage.value - 1)
-}
-
-const goToNextPage = () => {
-  goToPage(currentPage.value + 1)
-}
 
 const statusClass = (status) => {
   if (status === 'In Transit') return 'status-transit'
