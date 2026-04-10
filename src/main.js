@@ -4,7 +4,6 @@ import router from "./router"
 
 import "primeicons/primeicons.css"
 import PrimeVue from "primevue/config"
-import Aura from "@primeuix/themes/aura"
 import ConfirmationService from "primevue/confirmationservice"
 
 import Button from "primevue/button"
@@ -35,7 +34,50 @@ const app = createApp(App)
 
 app.use(PrimeVue, {
     unstyled: true,
+    pt: {
+        accordioncontent: {
+            transition: {
+                enterFromClass: "opacity-0 -translate-y-1",
+                enterActiveClass: "transition-all duration-300 ease-out overflow-hidden",
+                enterToClass: "opacity-100 translate-y-0",
+                leaveFromClass: "opacity-100 translate-y-0",
+                leaveActiveClass: "transition-all duration-300 ease-in overflow-hidden",
+                leaveToClass: "opacity-0 -translate-y-1",
+            },
+        },
+        dialog: {
+            transition: {
+                enterFromClass: "opacity-0 scale-95",
+                enterActiveClass: "transition-all duration-300 ease-out",
+                enterToClass: "opacity-100 scale-100",
+                leaveFromClass: "opacity-100 scale-100",
+                leaveActiveClass: "transition-all duration-200 ease-in",
+                leaveToClass: "opacity-0 scale-95",
+            },
+        },
+        tooltip: {
+            transition: {
+                enterFromClass: "opacity-0",
+                enterActiveClass: "transition-opacity duration-200 ease-out",
+                enterToClass: "opacity-100",
+                leaveFromClass: "opacity-100",
+                leaveActiveClass: "transition-opacity duration-150 ease-in",
+                leaveToClass: "opacity-0",
+            },
+        },
+        select: {
+            transition: {
+                enterFromClass: "opacity-0 scale-y-0 translate-y-40",
+                enterActiveClass: "transition-all duration-300 ease-in-out origin-top",
+                enterToClass: "opacity-100 scale-y-100",
+                leaveFromClass: "opacity-100 scale-y-100",
+                leaveActiveClass: "transition-all duration-300 ease-in-out origin-top",
+                leaveToClass: "opacity-0 scale-y-0",
+            },
+        },
+    },
 })
+
 app.use(ConfirmationService)
 
 app.component("Button", Button)

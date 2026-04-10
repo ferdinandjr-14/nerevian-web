@@ -1,5 +1,5 @@
 <template>
-    <section class="dashboard-page">
+    <section>
         <div class="stats-grid">
             <CardInfo
                 v-for="card in statsCards"
@@ -9,64 +9,127 @@
             />
         </div>
 
-        <div class="content-grid">
-            <Card class="panel table-panel">
-                <template #content>
-                    <DataTable
-                        v-model:filters="tableFilters"
-                        :value="shipments"
-                        :globalFilterFields="['id', 'carrier', 'route', 'statusLabel', 'eta']"
-                        class="shipments-table"
-                        dataKey="id"
-                        paginator
-                        :rows="5"
-                        :rowsPerPageOptions="[5, 10, 20]"
-                        scrollable
-                        scrollHeight="24rem"
-                        paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first}-{last} of {totalRecords} results"
-                    >
-                        <template #header>
-                            <div class="table-header">
-                                <IconField>
-                                    <InputIcon class="pi pi-search" />
-                                    <InputText
-                                        v-model="tableFilters.global.value"
-                                        placeholder="Search offers"
-                                    />
-                                </IconField>
-                            </div>
-                        </template>
-
-                        <Column header="ID" sortable>
-                            <template #body="{ data }">
-                                <div class="shipment-cell">
-                                    <p class="shipment-id">{{ data.id }}</p>
-                                    <p class="shipment-meta">{{ data.carrier }}</p>
-                                </div>
-                            </template>
-                        </Column>
-                        <Column field="route" header="Route" sortable />
-                        <Column field="statusLabel" header="Current Status" sortable>
-                            <template #body="{ data }">
-                                <StatusBadge :status-id="data.statusId" />
-                            </template>
-                        </Column>
-                        <Column field="eta" header="ETA" sortable />
-                        <Column header="Action">
-                            <template #body="{ data }">
-                                <Button
-                                    label="View details"
-                                    text
-                                    class="details-btn"
-                                    @click="goToOfferDetails(data.offerId)"
-                                />
-                            </template>
-                        </Column>
-                    </DataTable>
+        <DataTable
+            scrollable
+            scrollHeight="600px"
+            v-model:filters="tableFilters"
+            :value="shipments"
+            dataKey="id"
+            paginator
+            :rows="10"
+            :rowsPerPageOptions="[10, 20, 50]"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            :pt="{
+                root: { class: 'w-full bg-secondary rounded-xl overflow-hidden' },
+                table: { class: 'w-full border-collapse' },
+                thead: { class: 'border-b border-secondary-muted' },
+                tbody: { class: 'divide-y divide-secondary-muted' },
+                pcPaginator: {
+                    root: {
+                        class: 'flex gap-5 items-center justify-center gap-2 px-6 py-4 bg-secondary-muted text-primary',
+                    },
+                    content: {
+                        class: 'flex items-center gap-3',
+                    },
+                    pcRowPerPageDropdown: {
+                        root: {
+                            class: 'flex items-center justify-center gap-1 bg-secondary border border-secondary-muted rounded-lg px-3 py-1 cursor-pointer text-sm text-primary',
+                        },
+                        label: { class: 'text-primary text-sm' },
+                        dropdown: { class: 'text-primary text-xs ml-1' },
+                        overlay: {
+                            class: 'bg-secondary border border-secondary-muted rounded-lg mt-1 overflow-hidden z-50',
+                        },
+                        option: ({ context }) => ({
+                            class: [
+                                'px-4 py-2 text-sm cursor-pointer transition-colors',
+                                context.selected
+                                    ? 'bg-accent text-primary'
+                                    : 'text-primary hover:bg-secondary-muted',
+                            ],
+                        }),
+                        list: { class: 'p-1' },
+                    },
+                },
+            }"
+        >
+            <Column
+                header="Shipment ID"
+                :pt="{
+                    headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                    bodyCell: { class: 'px-6 py-5' },
+                }"
+            >
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-0.5">
+                        <p class="text-accent font-semibold text-sm tracking-wide">
+                            #{{ data.id }}
+                        </p>
+                        <p class="text-primary text-xs opacity-50">Carrier: {{ data.carrier }}</p>
+                    </div>
                 </template>
-            </Card>
-        </div>
+            </Column>
+
+            <Column
+                field="route"
+                header="Route"
+                :pt="{
+                    headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                    bodyCell: { class: 'px-6 py-5' },
+                }"
+            >
+                <template #body="{ data }">
+                    <div class="flex items-center gap-2 text-primary text-sm">
+                        <span>{{ data.origin }}</span>
+                        <i class="pi pi-arrow-right text-accent opacity-60 text-xs" />
+                        <span>{{ data.destination }}</span>
+                    </div>
+                </template>
+            </Column>
+
+            <Column
+                field="statusLabel"
+                header="Current Status"
+                :pt="{
+                    headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                    bodyCell: { class: 'px-6 py-5' },
+                }"
+            >
+                <template #body="{ data }">
+                    <StatusBadge :status-id="data.statusId" />
+                </template>
+            </Column>
+
+            <Column
+                field="eta"
+                header="ETA"
+                :pt="{
+                    headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                    bodyCell: { class: 'px-6 py-5' },
+                }"
+            >
+                <template #body="{ data }">
+                    <span class="text-primary text-sm tabular-nums">{{ data.eta }}</span>
+                </template>
+            </Column>
+
+            <Column
+                header="Action"
+                :pt="{
+                    headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                    bodyCell: { class: 'px-6 py-5' },
+                }"
+            >
+                <template #body="{ data }">
+                    <button
+                        class="text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors cursor-pointer"
+                        @click="goToOfferDetails(data.offerId)"
+                    >
+                        View Details
+                    </button>
+                </template>
+            </Column>
+        </DataTable>
     </section>
 </template>
 
@@ -92,12 +155,15 @@ const ACTIVE_STATUS_IDS = [
     OFFER_STATUS_IDS.OUT_FOR_DELIVERY,
 ]
 
-const countByStatus = (statusId) => offers.filter((offer) => offer.estatOfertaId === statusId).length
+const countByStatus = (statusId) =>
+    offers.filter((offer) => offer.estatOfertaId === statusId).length
 
 const statsCards = computed(() => {
     const totalOffers = offers.length
     const pendingOffers = countByStatus(OFFER_STATUS_IDS.PENDING)
-    const activeOffers = offers.filter((offer) => ACTIVE_STATUS_IDS.includes(offer.estatOfertaId)).length
+    const activeOffers = offers.filter((offer) =>
+        ACTIVE_STATUS_IDS.includes(offer.estatOfertaId),
+    ).length
     const rejectedOffers = countByStatus(OFFER_STATUS_IDS.REJECTED)
     const finalizedOffers = countByStatus(OFFER_STATUS_IDS.FINALIZED)
 
@@ -131,7 +197,6 @@ const goToOfferDetails = (offerId) => {
 .dashboard-page {
     min-height: 100vh;
     padding: 2rem;
-    background: #e8e8dd;
 }
 
 .stats-grid {
@@ -145,124 +210,5 @@ const goToOfferDetails = (offerId) => {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.65rem;
-}
-
-.panel {
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.table-header {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.shipment-cell {
-    min-width: 180px;
-}
-
-.shipment-id {
-    margin: 0;
-    color: #3dd0da;
-    font-weight: 600;
-}
-
-.shipment-meta {
-    margin: 2px 0 0;
-    color: #7ca6ab;
-}
-
-:deep(.panel.p-card) {
-    background: #073d45;
-    border: 1px solid #0f5660;
-    border-radius: 8px;
-}
-
-:deep(.panel .p-card-body) {
-    padding: 0.6rem;
-}
-
-:deep(.table-panel .p-card-body) {
-    padding: 0.85rem 1rem;
-}
-
-:deep(.shipments-table .p-datatable-table) {
-    min-width: 700px;
-}
-
-:deep(.shipments-table .p-datatable-table-container) {
-    min-height: 24rem;
-}
-
-:deep(.shipments-table .p-datatable-header) {
-    background: transparent;
-    border: none;
-    padding: 0 0 0.85rem;
-}
-
-:deep(.shipments-table .p-inputtext) {
-    min-width: 220px;
-}
-
-:deep(.shipments-table .p-datatable-thead > tr > th) {
-    background: transparent;
-    color: #9ec0c5;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 700;
-    border: none;
-    padding: 0 0 0.85rem;
-}
-
-:deep(.shipments-table .p-datatable-tbody > tr) {
-    background: transparent;
-}
-
-:deep(.shipments-table .p-datatable-tbody > tr > td) {
-    border-top: 1px solid rgba(123, 187, 198, 0.1);
-    border-bottom: none;
-    color: #d8ecee;
-    padding: 0.85rem 0;
-}
-
-:deep(.shipments-table .p-paginator) {
-    background: #0a525c;
-    border: none;
-    color: #8fb8bd;
-    padding: 0.7rem 0;
-}
-
-:deep(.shipments-table .p-paginator-page.p-paginator-page-selected) {
-    background: #1f9da8;
-    color: #fff;
-}
-
-:deep(.details-btn.p-button) {
-    padding: 0;
-    border: none;
-    color: #3dd0da;
-    text-transform: uppercase;
-    background: transparent;
-}
-
-:deep(.details-btn.p-button:hover) {
-    background: transparent;
-    color: #3dd0da;
-}
-
-@media (max-width: 1100px) {
-    .stats-grid {
-        grid-template-columns: repeat(3, minmax(140px, 1fr));
-    }
-}
-
-@media (max-width: 760px) {
-    .dashboard-page {
-        padding: 1rem;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, minmax(130px, 1fr));
-    }
 }
 </style>

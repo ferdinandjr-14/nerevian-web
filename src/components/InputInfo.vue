@@ -1,8 +1,8 @@
 <template>
-    <p>
-        <span class="mr-2">{{ label }}:</span>
+    <span class="flex items-center">
+        <p class="mr-2">{{ label }}:</p>
         <em :class="valueClass">{{ value }}</em>
-    </p>
+    </span>
 </template>
 
 <script setup>
