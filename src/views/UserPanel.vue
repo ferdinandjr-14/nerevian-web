@@ -1,112 +1,185 @@
 <template>
     <section class="user-panel-page">
-        <header class="user-panel-topbar">
-            <Button icon="pi pi-arrow-left" text class="back-btn" type="button" @click="goBack" />
-        </header>
-
-        <div class="panel-toolbar">
-            <Button label="ADD USER" type="button" class="add-user-btn" @click="openCreateModal" />
-            <Button icon="pi pi-filter-slash" type="button" class="filter-btn" aria-label="Clear filters" @click="clearFilters" />
-        </div>
-
-        <Tabs v-model:value="activeRoleTab" class="role-tabs">
+        <Tabs v-model:value="activeRoleTab">
             <TabList>
-                <Tab v-for="role in roleTabs" :key="role.value" :value="role.value">{{ role.label }}</Tab>
+                <Tab
+                    v-for="role in roleTabs"
+                    :key="role.value"
+                    :value="role.value"
+                    :class="[
+                        'w-50 py-3 mb-5 cursor-pointer text-lg',
+                        activeRoleTab === role.value
+                            ? 'border-b-4'
+                            : 'border-b-4 border-b-accent-muted hover:border-b-secondary transition-all duration-300 ease-in-out',
+                    ]"
+                    >{{ role.label }}</Tab
+                >
             </TabList>
             <TabPanels>
+                <Button
+                    label="ADD USER"
+                    type="button"
+                    class="bg-danger text-primary py-2 px-10 rounded-lg cursor-pointer mb-5"
+                    @click="openCreateModal"
+                />
                 <TabPanel v-for="role in roleTabs" :key="`${role.value}-panel`" :value="role.value">
-                    <Card class="users-table-wrap">
-                        <template #content>
-                            <DataTable
-                                v-model:filters="tableFilters"
-                                :value="usersByRole(role.value)"
-                                :globalFilterFields="['id', 'name', 'surname', 'email']"
-                                class="users-table"
-                                dataKey="id"
-                                paginator
-                                :rows="12"
-                                :rowsPerPageOptions="[12, 24, 36]"
-                                filterDisplay="row"
-                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                                currentPageReportTemplate="Showing {first}-{last} of {totalRecords} users"
-                            >
-                                <template #header>
-                                    <div class="table-head-tools">
-                                        <IconField>
-                                            <InputIcon class="pi pi-search" />
-                                            <InputText
-                                                v-model="tableFilters.global.value"
-                                                placeholder="Search users"
-                                            />
-                                        </IconField>
-                                    </div>
-                                </template>
-
-                                <Column field="id" header="ID" sortable :showFilterMenu="false">
-                                    <template #filter="{ filterModel, filterCallback }">
-                                        <InputText
-                                            v-model="filterModel.value"
-                                            placeholder="Search by ID"
-                                            @input="filterCallback()"
-                                        />
-                                    </template>
-                                </Column>
-                                <Column field="name" header="NAME" sortable :showFilterMenu="false">
-                                    <template #filter="{ filterModel, filterCallback }">
-                                        <InputText
-                                            v-model="filterModel.value"
-                                            placeholder="Search by Name"
-                                            @input="filterCallback()"
-                                        />
-                                    </template>
-                                </Column>
-                                <Column field="surname" header="SURNAME" sortable :showFilterMenu="false">
-                                    <template #filter="{ filterModel, filterCallback }">
-                                        <InputText
-                                            v-model="filterModel.value"
-                                            placeholder="Search by Surname"
-                                            @input="filterCallback()"
-                                        />
-                                    </template>
-                                </Column>
-                                <Column field="email" header="EMAIL" sortable :showFilterMenu="false">
-                                    <template #filter="{ filterModel, filterCallback }">
-                                        <InputText
-                                            v-model="filterModel.value"
-                                            placeholder="Search by Email"
-                                            @input="filterCallback()"
-                                        />
-                                    </template>
-                                </Column>
-                                <Column header="ACTION">
-                                    <template #body="{ data }">
-                                        <div class="action-cell">
-                                            <Button
-                                                icon="pi pi-pencil"
-                                                text
-                                                type="button"
-                                                class="icon-btn"
-                                                aria-label="Edit user"
-                                                @click="openEditModal(data)"
-                                            />
-                                            <Button
-                                                icon="pi pi-trash"
-                                                text
-                                                type="button"
-                                                class="icon-btn"
-                                                aria-label="Delete user"
-                                                @click="openDeleteConfirm(data)"
-                                            />
-                                        </div>
-                                    </template>
-                                </Column>
-
-                                <template #empty>
-                                    <p class="empty-row">No users found.</p>
-                                </template>
-                            </DataTable>
+                    <DataTable
+                        v-model:filters="tableFilters"
+                        :value="usersByRole(role.value)"
+                        :globalFilterFields="['id', 'name', 'surname', 'email']"
+                        class="users-table"
+                        dataKey="id"
+                        paginator
+                        :rows="12"
+                        :rowsPerPageOptions="[12, 24, 36]"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        showGridlines
+                        :pt="{
+                            root: { class: 'w-full bg-accent rounded-xl overflow-hidden' },
+                            table: { class: 'w-full border-collapse' },
+                            thead: { class: 'border-b border-secondary-muted' },
+                            tbody: { class: 'divide-y divide-secondary-muted' },
+                            pcPaginator: {
+                                root: {
+                                    class: 'flex gap-5 items-center justify-center gap-2 px-6 py-4 bg-accent-muted border-t border-secondary text-secondary',
+                                },
+                                content: {
+                                    class: 'flex items-center gap-3',
+                                },
+                                pcRowPerPageDropdown: {
+                                    root: {
+                                        class: 'flex items-center justify-center gap-1 bg-accent border border-secondary-muted rounded-lg px-3 py-1 cursor-pointer text-lg text-primary',
+                                    },
+                                    label: { class: 'text-primary text-lg' },
+                                    dropdown: { class: 'text-primary text-xs ml-1' },
+                                    overlay: {
+                                        class: 'bg-accent-muted border border-secondary-muted rounded-lg mt-1 overflow-hidden z-50',
+                                    },
+                                    option: ({ context }) => ({
+                                        class: [
+                                            'px-4 py-2 text-lg cursor-pointer transition-colors rounded-md',
+                                            context.selected
+                                                ? 'bg-accent text-primary'
+                                                : 'text-secondary hover:bg-accent',
+                                        ],
+                                    }),
+                                    list: { class: 'p-1' },
+                                },
+                            },
+                        }"
+                    >
+                        <template #header>
+                            <div class="pl-4 pt-6 pb-4 text-primary">
+                                <IconField class="flex gap-2 items-center border-b max-w-70 pb-2">
+                                    <InputIcon class="pi pi-search" />
+                                    <InputText
+                                        v-model="tableFilters.global.value"
+                                        placeholder="Search users"
+                                        class="border-0 outline-0 w-full"
+                                    />
+                                </IconField>
+                            </div>
                         </template>
-                    </Card>
+
+                        <Column
+                            field="id"
+                            header="ID"
+                            sortable
+                            :pt="{
+                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                                bodyCell: {
+                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
+                                },
+                                columnheadercontent: { class: 'flex items-center gap-3' },
+                            }"
+                        >
+                            <template #body="{ data }">
+                                <span class="text-secondary text-lg">{{ data.id }}</span>
+                            </template>
+                        </Column>
+                        <Column
+                            field="name"
+                            header="NAME"
+                            sortable
+                            :pt="{
+                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                                bodyCell: {
+                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
+                                },
+                                columnheadercontent: { class: 'flex items-center gap-3' },
+                            }"
+                        >
+                            <template #body="{ data }">
+                                <span class="text-secondary text-lg">{{ data.name }}</span>
+                            </template>
+                        </Column>
+                        <Column
+                            field="surname"
+                            header="SURNAME"
+                            sortable
+                            :pt="{
+                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                                bodyCell: {
+                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
+                                },
+                                columnheadercontent: { class: 'flex items-center gap-3' },
+                            }"
+                        >
+                            <template #body="{ data }">
+                                <span class="text-secondary text-lg">{{ data.surname }}</span>
+                            </template>
+                        </Column>
+                        <Column
+                            field="email"
+                            header="EMAIL"
+                            sortable
+                            :pt="{
+                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                                bodyCell: {
+                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
+                                },
+                                columnheadercontent: { class: 'flex items-center gap-3' },
+                            }"
+                        >
+                            <template #body="{ data }">
+                                <span class="text-secondary text-lg">{{ data.email }}</span>
+                            </template>
+                        </Column>
+                        <Column
+                            header="ACTION"
+                            :pt="{
+                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
+                                bodyCell: {
+                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium',
+                                },
+                            }"
+                        >
+                            <template #body="{ data }">
+                                <div class="flex gap-4">
+                                    <Button
+                                        icon="pi pi-pencil"
+                                        text
+                                        type="button"
+                                        class="cursor-pointer text-secondary"
+                                        aria-label="Edit user"
+                                        @click="openEditModal(data)"
+                                    />
+                                    <Button
+                                        icon="pi pi-trash"
+                                        text
+                                        type="button"
+                                        class="cursor-pointer text-red-400"
+                                        aria-label="Delete user"
+                                        @click="openDeleteConfirm($event, data)"
+                                    />
+                                </div>
+                            </template>
+                        </Column>
+
+                        <template #empty>
+                            <p class="empty-row">No users found.</p>
+                        </template>
+                    </DataTable>
                 </TabPanel>
             </TabPanels>
         </Tabs>
@@ -115,48 +188,130 @@
             v-model:visible="showUserModal"
             modal
             :header="isEditing ? 'EDIT USER' : 'CREATE USER'"
-            class="user-dialog"
             :draggable="false"
+            :pt="{
+                mask: {
+                    class: 'bg-accent/30 fixed inset-0 flex justify-center items-center z-50 backdrop-blur-xs',
+                },
+                root: {
+                    class: 'bg-primary rounded-xl shadow-2xl flex flex-col w-full max-w-md overflow-hidden m-4',
+                },
+                header: {
+                    class: 'bg-secondary text-primary px-6 py-4 flex justify-between items-center font-bold text-lg',
+                },
+                title: { class: 'text-primary' },
+                closeButton: {
+                    class: 'text-primary hover:text-accent transition-colors cursor-pointer flex items-center justify-center w-8 h-8 rounded-full outline-0 border-0 ring-0 cursor-pointer',
+                },
+                content: { class: 'bg-primary px-6 py-5' },
+                footer: {
+                    class: 'bg-primary px-6 py-4 flex justify-end gap-3',
+                },
+            }"
         >
-            <div class="modal-body">
-                <label>
-                    <span>NAME</span>
-                    <InputText v-model="userForm.name" type="text" />
+            <div class="flex flex-col gap-4">
+                <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">NAME</span>
+                    <InputText
+                        v-model="userForm.name"
+                        type="text"
+                        class="border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary outline-none focus:border-accent"
+                    />
                 </label>
-                <label>
-                    <span>SURNAME</span>
-                    <InputText v-model="userForm.surname" type="text" />
+                <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">SURNAME</span>
+                    <InputText
+                        v-model="userForm.surname"
+                        type="text"
+                        class="border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary outline-none focus:border-accent"
+                    />
                 </label>
-                <label>
-                    <span>EMAIL</span>
-                    <InputText v-model="userForm.email" type="email" />
+                <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">EMAIL</span>
+                    <InputText
+                        v-model="userForm.email"
+                        type="email"
+                        class="border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary outline-none focus:border-accent"
+                    />
                 </label>
-                <label>
-                    <span>PASSWORD</span>
-                    <Password v-model="userForm.password" :feedback="false" toggleMask />
+                <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">PASSWORD</span>
+                    <Password
+                        v-model="userForm.password"
+                        :feedback="false"
+                        toggleMask
+                        inputClass="w-full border-0 outline-0 ring-0"
+                        class="flex w-full border border-secondary px-3 py-2 rounded-lg items-center"
+                    />
                 </label>
-                <label>
-                    <span>ROLE</span>
+                <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">ROLE</span>
                     <Select
                         v-model="userForm.role"
                         :options="roleTabs"
                         optionLabel="label"
                         optionValue="value"
+                        :pt="{
+                            root: {
+                                class: 'border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary flex items-center justify-between outline-none cursor-pointer focus:border-accent',
+                            },
+                            label: { class: 'text-dark' },
+                            dropdown: { class: 'text-dark/70' },
+                            overlay: {
+                                class: 'bg-primary border border-secondary-muted rounded-lg mt-1 shadow-lg z-50 overflow-hidden',
+                            },
+                            option: ({ context }) => ({
+                                class: [
+                                    'px-4 py-2 cursor-pointer transition-colors',
+                                    context.selected
+                                        ? 'bg-accent text-primary'
+                                        : 'text-dark hover:bg-secondary-muted',
+                                ],
+                            }),
+                            list: { class: 'py-1' },
+                        }"
                     />
                 </label>
             </div>
             <template #footer>
-                <Button label="CANCEL" type="button" class="modal-cancel" @click="closeUserModal" />
                 <Button
                     :label="isEditing ? 'SAVE' : 'CREATE'"
                     type="button"
-                    class="modal-submit"
+                    class="bg-danger text-primary px-6 py-2 rounded-lg cursor-pointer font-medium hover:opacity-90 transition-opacity outline-none border-0"
                     @click="saveUser"
                 />
             </template>
         </Dialog>
 
-        <ConfirmDialog />
+        <ConfirmPopup
+            :pt="{
+                root: {
+                    class: 'bg-primary rounded-xl shadow-2xl border border-secondary-muted overflow-hidden z-50 mt-2 min-w-72 absolute',
+                },
+                content: { class: 'p-5 flex items-center gap-4' },
+                icon: { class: 'text-danger text-2xl' },
+                message: { class: 'text-dark font-medium text-lg m-0' },
+                footer: {
+                    class: 'px-5 py-4 flex justify-end gap-3 border-t border-secondary-muted bg-primary',
+                },
+                pcRejectButton: {
+                    root: {
+                        class: 'px-4 py-2 text-dark hover:text-accent transition-colors cursor-pointer font-medium outline-none bg-transparent border-0',
+                    },
+                },
+                pcAcceptButton: {
+                    root: {
+                        class: 'bg-red-500 text-primary px-6 py-2 rounded-lg cursor-pointer font-medium hover:opacity-90 transition-opacity outline-none border-0',
+                    },
+                },
+                transition: {
+                    enterFromClass: 'opacity-0 scale-y-0',
+                    enterActiveClass: 'transition-all duration-200 ease-out origin-top',
+                    leaveActiveClass: 'transition-all duration-200 ease-in origin-top',
+                    leaveToClass: 'opacity-0 scale-y-0',
+                },
+            }"
+        />
     </section>
 </template>
 
@@ -180,19 +335,79 @@ const activeRoleTab = ref("operator")
 
 const users = ref([
     { id: 11235423, name: "Jane", surname: "Doe", email: "janedoe@nerevian.com", role: "operator" },
-    { id: 11235424, name: "Carlos", surname: "Ruiz", email: "cruiz@nerevian.com", role: "commercial" },
+    {
+        id: 11235424,
+        name: "Carlos",
+        surname: "Ruiz",
+        email: "cruiz@nerevian.com",
+        role: "commercial",
+    },
     { id: 11235425, name: "Ana", surname: "Pardo", email: "apardo@nerevian.com", role: "client" },
-    { id: 11235426, name: "Luis", surname: "Ibarra", email: "libarra@nerevian.com", role: "operator" },
-    { id: 11235427, name: "Marta", surname: "Vega", email: "mvega@nerevian.com", role: "commercial" },
+    {
+        id: 11235426,
+        name: "Luis",
+        surname: "Ibarra",
+        email: "libarra@nerevian.com",
+        role: "operator",
+    },
+    {
+        id: 11235427,
+        name: "Marta",
+        surname: "Vega",
+        email: "mvega@nerevian.com",
+        role: "commercial",
+    },
     { id: 11235428, name: "David", surname: "Soler", email: "dsoler@nerevian.com", role: "client" },
-    { id: 11235429, name: "Irene", surname: "Nieto", email: "inieto@nerevian.com", role: "operator" },
-    { id: 11235430, name: "Pablo", surname: "Mora", email: "pmora@nerevian.com", role: "commercial" },
-    { id: 11235431, name: "Nora", surname: "Campos", email: "ncampos@nerevian.com", role: "client" },
-    { id: 11235432, name: "Mario", surname: "Costa", email: "mcosta@nerevian.com", role: "operator" },
-    { id: 11235433, name: "Julia", surname: "Lozano", email: "jlozano@nerevian.com", role: "commercial" },
+    {
+        id: 11235429,
+        name: "Irene",
+        surname: "Nieto",
+        email: "inieto@nerevian.com",
+        role: "operator",
+    },
+    {
+        id: 11235430,
+        name: "Pablo",
+        surname: "Mora",
+        email: "pmora@nerevian.com",
+        role: "commercial",
+    },
+    {
+        id: 11235431,
+        name: "Nora",
+        surname: "Campos",
+        email: "ncampos@nerevian.com",
+        role: "client",
+    },
+    {
+        id: 11235432,
+        name: "Mario",
+        surname: "Costa",
+        email: "mcosta@nerevian.com",
+        role: "operator",
+    },
+    {
+        id: 11235433,
+        name: "Julia",
+        surname: "Lozano",
+        email: "jlozano@nerevian.com",
+        role: "commercial",
+    },
     { id: 11235434, name: "Eric", surname: "Sanz", email: "esanz@nerevian.com", role: "client" },
-    { id: 11235435, name: "Sofia", surname: "Ramos", email: "sramos@nerevian.com", role: "operator" },
-    { id: 11235436, name: "Alvaro", surname: "Bellido", email: "abellido@nerevian.com", role: "commercial" },
+    {
+        id: 11235435,
+        name: "Sofia",
+        surname: "Ramos",
+        email: "sramos@nerevian.com",
+        role: "operator",
+    },
+    {
+        id: 11235436,
+        name: "Alvaro",
+        surname: "Bellido",
+        email: "abellido@nerevian.com",
+        role: "commercial",
+    },
 ])
 
 const showUserModal = ref(false)
@@ -216,20 +431,6 @@ const tableFilters = ref({
 })
 
 const usersByRole = (role) => users.value.filter((user) => user.role === role)
-
-const goBack = () => {
-    router.push({ name: "dashboard" })
-}
-
-const clearFilters = () => {
-    tableFilters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        id: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        surname: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        email: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    }
-}
 
 const resetUserForm = () => {
     userForm.name = ""
@@ -257,10 +458,6 @@ const openEditModal = (user) => {
     showUserModal.value = true
 }
 
-const closeUserModal = () => {
-    showUserModal.value = false
-}
-
 const saveUser = () => {
     if (!userForm.name || !userForm.surname || !userForm.email || !userForm.role) return
 
@@ -286,13 +483,14 @@ const saveUser = () => {
     showUserModal.value = false
 }
 
-const openDeleteConfirm = (user) => {
+const openDeleteConfirm = (event, user) => {
     selectedUserId.value = user.id
     confirm.require({
+        target: event.currentTarget,
         message: "Are you sure you want to delete this user?",
-        header: "Delete User",
+        icon: "pi pi-exclamation-triangle",
         rejectLabel: "CANCEL",
-        acceptLabel: "ACCEPT",
+        acceptLabel: "DELETE",
         reject: () => {
             selectedUserId.value = null
         },
@@ -303,298 +501,3 @@ const openDeleteConfirm = (user) => {
     })
 }
 </script>
-
-<style scoped>
-.user-panel-page {
-    min-height: 100vh;
-    background: #e8e8dd;
-    padding: 1.2rem 1.4rem 1.6rem;
-}
-
-.user-panel-topbar {
-    margin-bottom: 0.65rem;
-}
-
-.panel-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.55rem;
-}
-
-.table-head-tools {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.action-cell {
-    display: flex;
-    justify-content: center;
-    gap: 0.42rem;
-}
-
-.empty-row {
-    margin: 0;
-    padding: 1rem;
-    color: #225057;
-}
-
-.modal-body {
-    padding: 0.7rem 0.9rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.modal-body label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.24rem;
-}
-
-.modal-body span {
-    color: #213c41;
-    font-weight: 600;
-}
-
-:deep(.back-btn.p-button) {
-    border: none;
-    background: transparent;
-    color: #118c8c;
-    font-weight: 900;
-    line-height: 1;
-    padding: 0;
-}
-
-:deep(.add-user-btn.p-button) {
-    border: none;
-    background: #ff6666;
-    color: #fff;
-    border-radius: 7px;
-    padding: 0.62rem 1.95rem;
-    font-weight: 600;
-    letter-spacing: 0.25px;
-}
-
-:deep(.filter-btn.p-button) {
-    border: none;
-    background: #118c8c;
-    color: #fff;
-    border-radius: 7px;
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    padding: 0;
-}
-
-:deep(.role-tabs .p-tablist-tab-list) {
-    background: transparent;
-    border: none;
-    gap: 0.45rem;
-    margin-bottom: 0.55rem;
-}
-
-:deep(.role-tabs .p-tab) {
-    border-radius: 8px;
-    border: 1px solid #118c8c;
-    background: #abd2c7;
-    color: #11444d;
-}
-
-:deep(.role-tabs .p-tab.p-tab-active) {
-    background: #118c8c;
-    color: #fff;
-    border-color: #118c8c;
-}
-
-:deep(.role-tabs .p-tabpanels) {
-    padding: 0;
-    background: transparent;
-}
-
-:deep(.users-table-wrap.p-card) {
-    background: #abd2c7;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-:deep(.users-table-wrap .p-card-body) {
-    padding: 0;
-}
-
-:deep(.users-table .p-datatable-header) {
-    background: transparent;
-    border: none;
-    padding: 0.75rem 0.75rem 0.45rem;
-}
-
-:deep(.users-table .p-datatable-header .p-inputtext) {
-    min-width: 220px;
-}
-
-:deep(.users-table .p-datatable-thead > tr > th) {
-    background: #118c8c;
-    color: #ebf7f8;
-    font-weight: 600;
-    padding: 0.64rem 0.75rem;
-    border-right: 1px solid rgba(17, 140, 140, 0.45);
-}
-
-:deep(.users-table .p-datatable-thead > tr > th:last-child) {
-    border-right: none;
-    text-align: center;
-}
-
-:deep(.users-table .p-datatable-tbody > tr) {
-    background: #abd2c7;
-}
-
-:deep(.users-table .p-datatable-tbody > tr > td) {
-    color: #1f4d53;
-    border-bottom: 1px solid rgba(17, 140, 140, 0.4);
-    border-right: 1px solid rgba(17, 140, 140, 0.45);
-    padding: 0.6rem 0.75rem;
-}
-
-:deep(.users-table .p-datatable-tbody > tr > td:last-child) {
-    border-right: none;
-}
-
-:deep(.users-table .p-datatable-filter-row > th) {
-    background: #abd2c7;
-    border-right: 1px solid rgba(17, 140, 140, 0.2);
-}
-
-:deep(.users-table .p-datatable-filter-row > th:last-child) {
-    border-right: none;
-}
-
-:deep(.users-table .p-datatable-filter-row .p-inputtext) {
-    width: 100%;
-    border: none;
-    border-radius: 4px;
-    background: #eef0e8;
-    color: #22565c;
-    box-shadow: none;
-}
-
-:deep(.users-table .p-paginator) {
-    background: #abd2c7;
-    border: none;
-    padding: 0.75rem;
-}
-
-:deep(.users-table .p-paginator-page.p-paginator-page-selected) {
-    background: #118c8c;
-    color: #fff;
-}
-
-:deep(.icon-btn.p-button) {
-    border: none;
-    background: transparent;
-    color: #0a434a;
-    padding: 0.1rem;
-    min-width: auto;
-}
-
-:deep(.icon-btn.p-button:hover) {
-    color: #082e34;
-    background: transparent;
-}
-
-:deep(.user-dialog.p-dialog) {
-    width: min(520px, 100%);
-}
-
-:deep(.user-dialog .p-dialog-header) {
-    background: #083f49;
-    color: #fff;
-    font-weight: 700;
-    justify-content: center;
-}
-
-:deep(.user-dialog .p-dialog-content),
-:deep(.user-dialog .p-dialog-footer) {
-    background: #ece9dd;
-}
-
-:deep(.modal-body .p-inputtext),
-:deep(.modal-body .p-password-input),
-:deep(.modal-body .p-select) {
-    border: none;
-    border-radius: 4px;
-    background: #d8d8d8;
-    box-shadow: none;
-    color: #15373e;
-}
-
-:deep(.modal-body .p-password) {
-    width: 100%;
-}
-
-:deep(.modal-cancel.p-button),
-:deep(.modal-submit.p-button) {
-    border: none;
-    border-radius: 4px;
-    padding: 0.32rem 0.8rem;
-}
-
-:deep(.modal-cancel.p-button) {
-    background: #d9d9d9;
-    color: #314f53;
-}
-
-:deep(.modal-submit.p-button) {
-    background: #ff6666;
-    color: #fff;
-}
-
-:deep(.p-confirmdialog .p-dialog-content) {
-    background: #f8f8f6;
-}
-
-:deep(.p-confirmdialog .p-dialog-header) {
-    background: #f8f8f6;
-    color: #1f363a;
-}
-
-:deep(.p-confirmdialog .p-confirmdialog-message) {
-    color: #1f363a;
-}
-
-:deep(.p-confirmdialog-reject.p-button) {
-    background: #e4e4e4;
-    color: #365257;
-    border: none;
-}
-
-:deep(.p-confirmdialog-accept.p-button) {
-    background: #ff6666;
-    color: #fff;
-    border: none;
-}
-
-@media (max-width: 1100px) {
-    :deep(.users-table .p-datatable-table) {
-        min-width: 860px;
-    }
-
-    :deep(.users-table .p-datatable-table-container) {
-        overflow-x: auto;
-    }
-}
-
-@media (max-width: 640px) {
-    .user-panel-page {
-        padding: 0.9rem 0.65rem 1.2rem;
-    }
-
-    .panel-toolbar {
-        gap: 0.5rem;
-    }
-
-    :deep(.add-user-btn.p-button) {
-        padding: 0.52rem 1rem;
-    }
-}
-</style>

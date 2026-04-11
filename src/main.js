@@ -27,6 +27,7 @@ import DataTable from "primevue/datatable"
 import Column from "primevue/column"
 import Card from "primevue/card"
 import ConfirmDialog from "primevue/confirmdialog"
+import ConfirmPopup from "primevue/confirmpopup"
 
 import "./style.css"
 
@@ -101,6 +102,7 @@ app.component("DataTable", DataTable)
 app.component("Column", Column)
 app.component("Card", Card)
 app.component("ConfirmDialog", ConfirmDialog)
+app.component("ConfirmPopup", ConfirmPopup)
 
 app.use(router)
 
