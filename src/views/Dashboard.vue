@@ -71,7 +71,6 @@
             </Column>
 
             <Column
-                field="route"
                 header="Route"
                 :pt="{
                     headerCell: { class: 'px-6 py-4 text-left text-primary' },
@@ -180,8 +179,9 @@ const shipments = computed(() =>
     offers.map((offer) => ({
         id: `#OFF-${offer.id}`,
         offerId: offer.id,
-        carrier: `Carrier: ${offer.shippingLineName || offer.inlandCarrierName || "-"}`,
-        route: `${offer.originLabel} -> ${offer.destinationLabel}`,
+        carrier: `${offer.shippingLineName || offer.inlandCarrierName || "-"}`,
+        origin: offer.originLabel,
+        destination: offer.destinationLabel,
         statusId: offer.estatOfertaId,
         statusLabel: offer.statusLabel,
         eta: offer.eta || "-",

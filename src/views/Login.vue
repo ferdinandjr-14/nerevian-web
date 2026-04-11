@@ -4,7 +4,7 @@
 
         <div class="relative z-10 flex items-center justify-center w-full h-full">
             <form
-                class="bg-primary/95 backdrop-blur-md flex flex-col w-full max-w-md p-8 rounded-2xl shadow-xl gap-2"
+                class="bg-primary/95 backdrop-blur-md flex flex-col w-full max-w-xl p-8 rounded-2xl shadow-xl gap-2"
                 @submit.prevent
             >
                 <img class="brand-logo mx-auto mb-4 w-70" src="/images/logo.png" alt="Nerevian" />
