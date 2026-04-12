@@ -1,25 +1,40 @@
 <template>
-    <section class="create-offer-page bg-primary!">
-        <header class="offer-topbar">
-            <Button icon="pi pi-arrow-left" text class="back-btn" type="button" @click="goBack" />
-
-            <div class="topbar-right">
-                <span class="status-badge">Pending</span>
-                <Button label="Reset" type="button" class="reset-btn" @click="resetOffer" />
-            </div>
+    <p v-if="loadError" class="mt-[0.45rem] text-[#b42318]">{{ loadError }}</p>
+    <div v-else-if="isLoadingLookups" class="flex items-center gap-2">
+        <span
+            class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+        />
+        Loading data
+    </div>
+    <section
+        v-else
+        class="create-offer-page bg-primary! max-[700px]:px-3 max-[700px]:pt-[0.85rem] max-[700px]:pb-[1.8rem]"
+    >
+        <header class="flex justify-between mt-5 items-center">
+            <Button
+                icon="pi pi-arrow-left"
+                text
+                class="cursor-pointer"
+                type="button"
+                @click="router.push({ name: 'offers' })"
+            />
+            <Button
+                label="Reset"
+                type="button"
+                class="cursor-pointer bg-danger text-primary px-6 py-2 rounded-full"
+                @click="resetOffer"
+            />
         </header>
-
-        <p v-if="loadError" class="feedback-message feedback-error">{{ loadError }}</p>
 
         <Accordion v-model:value="openSections" multiple class="offer-accordion">
             <AccordionPanel
                 v-for="section in sections"
                 :key="section.key"
                 :value="section.key"
-                class="bg-accent-muted mt-10 rounded-lg"
+                class="bg-accent-muted mt-10 rounded-xl"
             >
                 <AccordionHeader
-                    class="bg-accent w-full text-left px-4 py-4 text-primary flex justify-between rounded-lg items-center cursor-pointer hover:bg-secondary-muted transition-all duration-300 ease-in-out"
+                    class="bg-accent w-full text-left px-4 py-4 text-primary flex justify-between rounded-xl items-center cursor-pointer hover:bg-secondary-muted transition-all duration-300 ease-in-out"
                 >
                     {{ section.title }}
                 </AccordionHeader>
@@ -34,10 +49,9 @@
                                 optionValue="value"
                                 placeholder="Select client"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Transport Type</span>
                             <Select
@@ -47,10 +61,10 @@
                                 optionValue="value"
                                 placeholder="Select transport"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
+                                disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Flow</span>
                             <Select
@@ -60,10 +74,9 @@
                                 optionValue="value"
                                 placeholder="Select flow"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Cargo Type</span>
                             <Select
@@ -73,10 +86,9 @@
                                 optionValue="value"
                                 placeholder="Select cargo type"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Incoterm</span>
                             <Select
@@ -86,10 +98,9 @@
                                 optionValue="value"
                                 placeholder="Select incoterm"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Validation Type</span>
                             <Select
@@ -99,7 +110,7 @@
                                 optionValue="value"
                                 placeholder="Select validation"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
                     </div>
@@ -114,10 +125,9 @@
                                 optionValue="value"
                                 placeholder="Select carrier"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Port of Origin</span>
                             <Select
@@ -127,11 +137,10 @@
                                 optionValue="value"
                                 placeholder="Select origin port"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
                                 filter
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Port of Destination</span>
                             <Select
@@ -141,40 +150,11 @@
                                 optionValue="value"
                                 placeholder="Select destination port"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
                                 filter
+                                :pt="selectPT"
                             />
                         </label>
-
-                        <label class="field-block" v-if="isAirTransport">
-                            <span>Airport of Origin</span>
-                            <Select
-                                v-model="form.aeroport_origen_id"
-                                :options="airportOptions"
-                                optionLabel="label"
-                                optionValue="value"
-                                placeholder="Select origin airport"
-                                class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
-                            />
-                        </label>
-
-                        <label class="field-block" v-if="isAirTransport">
-                            <span>Airport of Destination</span>
-                            <Select
-                                v-model="form.aeroport_desti_id"
-                                :options="airportOptions"
-                                optionLabel="label"
-                                optionValue="value"
-                                placeholder="Select destination airport"
-                                class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
-                            />
-                        </label>
-
-                        <label class="field-block" v-if="isMaritimeTransport">
+                        <label class="field-block">
                             <span>Shipping Line</span>
                             <Select
                                 v-model="form.linia_transport_maritim_id"
@@ -183,11 +163,10 @@
                                 optionValue="value"
                                 placeholder="Select shipping line"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
-                        <label class="field-block" v-if="isMaritimeTransport">
+                        <label class="field-block">
                             <span>Container Type</span>
                             <Select
                                 v-model="form.tipus_contenidor_id"
@@ -196,15 +175,13 @@
                                 optionValue="value"
                                 placeholder="Select container type"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                :pt="selectPT"
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Gross Weight (kg)</span>
                             <InputText v-model="form.pes_brut" type="number" min="0" step="0.01" />
                         </label>
-
                         <label class="field-block">
                             <span>Volume (m3)</span>
                             <InputText v-model="form.volum" type="number" min="0" step="0.01" />
@@ -216,17 +193,14 @@
                             <span>Created Date</span>
                             <InputText v-model="form.data_creacio" type="date" />
                         </label>
-
                         <label class="field-block">
                             <span>Validity Start</span>
                             <InputText v-model="form.data_validessa_inicial" type="date" />
                         </label>
-
                         <label class="field-block">
                             <span>Validity End</span>
                             <InputText v-model="form.data_validessa_fina" type="date" />
                         </label>
-
                         <label class="field-block">
                             <span>Status</span>
                             <InputText modelValue="Pending" type="text" disabled />
@@ -234,13 +208,25 @@
                     </div>
 
                     <div v-if="section.key === 'additional'" class="fields-grid cols-3">
-                        <label class="field-block field-block-full">
+                        <label class="field-block">
+                            <span>Commercial</span>
+                            <Select
+                                v-model="form.agent_commercial_id"
+                                :options="commercials"
+                                optionLabel="label"
+                                optionValue="value"
+                                placeholder="Assign commercial"
+                                class="w-full"
+                                :pt="selectPT"
+                            />
+                        </label>
+                        <label class="field-block col-span-full">
                             <span>Comments</span>
                             <Textarea
                                 v-model="form.comentaris"
                                 rows="4"
                                 autoResize
-                                class="bg-primary rounded-b-xl rounded-tr-xl shadow-lg px-4 py-2 max-h-50 outline-0 input-shadow"
+                                class="bg-primary rounded-b-xl rounded-tr-xl shadow-[2px_2px_4px_1px_rgb(124,124,124)] px-4 py-2 max-h-50 outline-0"
                             />
                         </label>
                     </div>
@@ -248,58 +234,67 @@
             </AccordionPanel>
         </Accordion>
 
-        <footer class="offer-footer">
-            <input
-                ref="fileInputRef"
-                type="file"
-                multiple
-                class="hidden-file-input"
-                @change="handleDocumentsUpload"
-            />
-
-            <div class="footer-left">
+        <footer
+            class="mt-12 flex max-[700px]:grid max-[700px]:grid-cols-1 justify-between items-center gap-3.5 pb-40"
+        >
+            <div>
+                <input
+                    ref="fileInputRef"
+                    type="file"
+                    multiple
+                    class="hidden"
+                    @change="handleDocumentsUpload"
+                />
                 <Button
                     icon="pi pi-upload"
                     label="UPLOAD DOCUMENTS"
                     type="button"
-                    class="docs-btn"
-                    @click="openFilePicker"
+                    class="p-2 bg-accent text-primary rounded-lg px-4 flex items-center gap-2 cursor-pointer"
+                    @click="fileInputRef.click()"
                 />
             </div>
-
-            <div class="footer-right">
+            <div>
                 <Button
-                    label="SAVE OFFER"
+                    label="SUBMIT"
                     type="button"
-                    class="submit-btn"
-                    :disabled="isSubmitting || isLoadingLookups"
+                    class="cursor-pointer bg-danger px-5 py-2 text-primary rounded-lg"
+                    :disabled="isSubmitting"
                     :loading="isSubmitting"
                     @click="submitOffer"
                 />
             </div>
         </footer>
 
-        <p v-if="uploadFeedback" class="feedback-message feedback-success">{{ uploadFeedback }}</p>
+        <p v-if="uploadFeedback" class="mt-[0.45rem] text-[#1c5259]">{{ uploadFeedback }}</p>
+        <p v-if="submitError" class="mt-[0.45rem] text-[#b42318]">{{ submitError }}</p>
 
         <Dialog
             v-model:visible="showDocumentsModal"
             modal
-            class="documents-dialog"
+            class="pb-5 min-h-100 min-w-100 rounded-lg bg-primary"
             :draggable="false"
+            :pt="{
+                mask: { class: 'bg-black/40 backdrop-blur-xs' },
+                header: { class: 'relative p-0' },
+                headerActions: {
+                    class: 'absolute right-3 top-3 text-primary cursor-pointer outline-0',
+                },
+            }"
         >
             <template #header>
-                <div class="documents-header">
-                    <h3>DOCUMENTS</h3>
-                </div>
+                <h3 class="bg-secondary p-3 text-primary text-center font-semibold rounded-t-lg">
+                    DOCUMENTS
+                </h3>
             </template>
-
-            <div class="documents-list">
-                <p v-if="!documents.length" class="documents-empty">No documents uploaded yet.</p>
+            <div class="flex flex-col gap-2 bg-primary p-3">
+                <p v-if="!documents.length" class="m-0 text-[#2c575e]">
+                    No documents uploaded yet.
+                </p>
                 <Button
                     v-for="(doc, index) in documents"
                     :key="`${doc.name}-${index}`"
                     type="button"
-                    class="document-item"
+                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between"
                     @click="downloadDocument(doc)"
                 >
                     <span>{{ doc.name }}</span>
@@ -312,9 +307,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue"
-import { AxiosError } from "axios"
 import { useRouter } from "vue-router"
-import { saveOfferDocuments } from "@/services/offer-documents"
 import {
     TRANSPORT_TYPE,
     clearTransportSpecificFields,
@@ -323,6 +316,7 @@ import {
     fetchOfferLookups,
     mapLookupOption,
 } from "@/services/offers"
+import { saveOfferDocuments } from "@/services/offer-documents"
 import apiClient from "@/services/api"
 
 const sections = [
@@ -333,10 +327,11 @@ const sections = [
 ]
 
 const router = useRouter()
-const openSections = ref(sections.map((section) => section.key))
+const openSections = ref(sections.map((s) => s.key))
 const form = reactive(createEmptyOfferForm())
 const lookups = reactive({
     clients: [],
+    commercials: [],
     tipus_transports: [],
     tipus_fluxes: [],
     tipus_carrega: [],
@@ -349,9 +344,10 @@ const lookups = reactive({
     linies_transport_maritim: [],
 })
 
-const isLoadingLookups = ref(false)
+const isLoadingLookups = ref(true)
 const isSubmitting = ref(false)
 const loadError = ref("")
+const submitError = ref("")
 const uploadFeedback = ref("")
 const documents = ref([])
 const showDocumentsModal = ref(false)
@@ -370,6 +366,9 @@ const validationOptions = computed(() =>
 )
 const clientOptions = computed(() =>
     mapLookupOption(lookups.clients, (item) => `${item.nom} (${item.cif})`),
+)
+const commercials = computed(() =>
+    mapLookupOption(lookups.commercials, (item) => `${item.nom} (${item.cognoms})`),
 )
 const carrierOptions = computed(() =>
     mapLookupOption(
@@ -391,13 +390,6 @@ const portOptions = computed(() =>
             `${item.nom} - ${item.ciutat?.nom ?? "Unknown city"} (${item.ciutat?.pais?.nom ?? "Unknown country"})`,
     ),
 )
-const airportOptions = computed(() =>
-    mapLookupOption(
-        lookups.aeroports,
-        (item) =>
-            `${item.codi?.trim() ?? ""} - ${item.nom} (${item.ciutat?.nom ?? "Unknown city"}, ${item.ciutat?.pais?.nom ?? "Unknown country"})`,
-    ),
-)
 const incotermOptions = computed(() =>
     mapLookupOption(
         lookups.incoterms,
@@ -409,7 +401,6 @@ const incotermOptions = computed(() =>
 const isMaritimeTransport = computed(
     () => Number(form.tipus_transport_id) === TRANSPORT_TYPE.MARITIME,
 )
-const isAirTransport = computed(() => Number(form.tipus_transport_id) === TRANSPORT_TYPE.AIR)
 
 watch(
     () => form.tipus_transport_id,
@@ -423,6 +414,7 @@ const loadLookups = async () => {
     try {
         const data = await fetchOfferLookups()
         lookups.clients = data.clients ?? []
+        lookups.commercials = data.commercials ?? []
         lookups.tipus_transports = data.tipus_transports ?? []
         lookups.tipus_fluxes = data.tipus_fluxes ?? []
         lookups.tipus_carrega = data.tipus_carrega ?? []
@@ -434,11 +426,7 @@ const loadLookups = async () => {
         lookups.transportistes = data.transportistes ?? []
         lookups.linies_transport_maritim = data.linies_transport_maritim ?? []
     } catch (error) {
-        if (error instanceof AxiosError) {
-            loadError.value = error.response?.data?.message || "Unable to load offer data."
-        } else {
-            loadError.value = "Unable to load offer data."
-        }
+        loadError.value = error.response?.data?.message || "Unable to load offer data."
     } finally {
         isLoadingLookups.value = false
     }
@@ -448,115 +436,67 @@ const resetOffer = () => {
     Object.assign(form, createEmptyOfferForm())
     documents.value = []
     uploadFeedback.value = ""
-    loadError.value = ""
+    submitError.value = ""
     showDocumentsModal.value = false
-    openSections.value = sections.map((section) => section.key)
-}
-
-const goBack = () => {
-    router.push({ name: "offers" })
-}
-
-const openFilePicker = () => {
-    if (fileInputRef.value) fileInputRef.value.click()
+    openSections.value = sections.map((s) => s.key)
 }
 
 const handleDocumentsUpload = (event) => {
     const fileList = event.target.files
-    if (!fileList || !fileList.length) return
+    if (!fileList?.length) return
 
-    const nextDocuments = Array.from(fileList).map((file) => ({
-        name: file.name,
-        file,
-        isPreset: false,
-    }))
-
-    documents.value = [...documents.value, ...nextDocuments]
-    uploadFeedback.value = `${nextDocuments.length} document(s) uploaded.`
+    const newDocs = Array.from(fileList).map((file) => ({ name: file.name, file }))
+    documents.value = [...documents.value, ...newDocs]
+    uploadFeedback.value = `${newDocs.length} document(s) uploaded.`
     showDocumentsModal.value = true
     event.target.value = ""
 }
 
 const downloadDocument = (doc) => {
-    if (doc.file) {
-        const objectUrl = URL.createObjectURL(doc.file)
-        const link = document.createElement("a")
-        link.href = objectUrl
-        link.download = doc.name
-        link.click()
-        URL.revokeObjectURL(objectUrl)
-        return
-    }
-
-    const placeholderContent = `Document preview placeholder for ${doc.name}`
-    const blob = new Blob([placeholderContent], { type: "text/plain" })
-    const objectUrl = URL.createObjectURL(blob)
+    const objectUrl = URL.createObjectURL(doc.file)
     const link = document.createElement("a")
     link.href = objectUrl
-    link.download = doc.name.replace(/\.pdf$/i, ".txt")
+    link.download = doc.name
     link.click()
     URL.revokeObjectURL(objectUrl)
 }
 
 const submitOffer = async () => {
     isSubmitting.value = true
-    loadError.value = ""
+    submitError.value = ""
 
     try {
         const { data } = await apiClient.post("/offers", createOfferPayload(form))
-
         if (data.offer?.id) {
             saveOfferDocuments(data.offer.id, documents.value)
             router.push({ name: "offer-detail", params: { id: String(data.offer.id) } })
         }
     } catch (error) {
-        if (error instanceof AxiosError) {
-            const fieldErrors = error.response?.data?.errors
-            const firstFieldError = fieldErrors
-                ? Object.values(fieldErrors).flat().find(Boolean)
-                : null
-
-            loadError.value =
-                firstFieldError || error.response?.data?.message || "Unable to save offer."
-        } else {
-            loadError.value = "Unable to save offer."
-        }
+        const fieldErrors = error.response?.data?.errors
+        const firstError = fieldErrors ? Object.values(fieldErrors).flat().find(Boolean) : null
+        submitError.value = firstError || error.response?.data?.message || "Unable to save offer."
     } finally {
         isSubmitting.value = false
     }
 }
 
 onMounted(loadLookups)
+
+const selectPT = {
+    overlay: {
+        class: "rounded-lg",
+    },
+    option: {
+        class: "bg-white px-4 py-2 hover:bg-gray-200 cursor-pointer",
+    },
+    list: {
+        class: "p-1",
+    },
+}
 </script>
 
 <style scoped>
-.create-offer-page {
-    min-height: 100vh;
-    background: #e8e8dd;
-    padding: 1rem 1rem 2rem;
-}
-
-.offer-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.85rem;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.status-badge {
-    background: #1f7a8c;
-    color: #fff;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    text-transform: capitalize;
-}
-
+/* unchanged from OfferDetails */
 .fields-grid {
     display: grid;
     gap: 0.62rem 1.8rem;
@@ -576,15 +516,12 @@ onMounted(loadLookups)
     [data-pc-name="select"] {
         display: flex;
         background-color: var(--color-primary);
-        border-radius: 0px 8px 8px;
+        border-radius: 0px 12px 12px;
         padding: 12px;
         align-items: center;
         justify-content: space-between;
+        box-shadow: 2px 2px 4px 1px rgb(124, 124, 124);
     }
-}
-
-.field-block-full {
-    grid-column: 1 / -1;
 }
 
 .field-block span {
@@ -597,206 +534,18 @@ onMounted(loadLookups)
     text-align: start;
 }
 
-.offer-footer {
-    margin-top: 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.8rem;
-}
-
-.feedback-message {
-    margin-top: 0.45rem;
-}
-
-.feedback-error {
-    color: #b42318;
-}
-
-.feedback-success {
-    color: #1c5259;
-}
-
-.hidden-file-input {
-    display: none;
-}
-
-.documents-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    min-height: 210px;
-}
-
-.documents-empty {
-    margin: 0;
-    color: #2c575e;
-}
-
-.documents-header h3 {
-    margin: 0;
-    letter-spacing: 0.4px;
-    font-weight: 600;
-}
-
-.input-shadow {
-    box-shadow: 2px 2px 4px 1px rgb(124, 124, 124);
-}
-
-:deep(.back-btn.p-button) {
-    border: none;
-    background: transparent;
-    color: #118c8c;
-    font-weight: 900;
-    line-height: 1;
-    text-shadow: 0 1px 0 rgba(4, 53, 53, 0.25);
-    padding: 0;
-    min-width: 24px;
-}
-
-:deep(.reset-btn.p-button) {
-    border: 1px solid #7f9da1;
-    background: #f8fbfb;
-    color: #496c71;
-    border-radius: 4px;
-    padding: 0.18rem 0.45rem;
-}
-
-:deep(.offer-accordion.p-accordion) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-:deep(.offer-accordion .p-accordionpanel) {
-    background: #abd2c7;
-    border-radius: 8px;
-    overflow: hidden;
-    border: none;
-}
-
-:deep(.offer-accordion .p-accordionheader) {
-    background: #118c8c;
-    color: #e9f6f5;
-}
-
-:deep(.offer-accordion .p-accordionheader-content) {
-    padding: 0.52rem 0.8rem;
-}
-
-:deep(.offer-accordion .p-accordionheader-toggle-icon) {
-    color: #e9f6f5;
-}
-
-:deep(.offer-accordion .p-accordioncontent-content) {
-    padding: 0.72rem 0.9rem 0.95rem;
-    background: #abd2c7;
-}
-
-:deep(.field-block .p-inputtext),
-:deep(.field-block .p-textarea),
-:deep(.field-block .p-select) {
-    border: none;
-    border-radius: 5px;
-    background: #ece9dd;
-    min-height: 40px;
-    padding: 0.28rem 0.42rem;
-    color: #183e44;
-    box-shadow: none;
-    width: 100%;
-}
-
-:deep(.field-block .p-select-label),
-:deep(.field-block .p-select-dropdown) {
-    color: #183e44;
-}
-
-:deep(.field-block .p-textarea) {
-    min-height: 64px;
-    resize: vertical;
-}
-
-:deep(.docs-btn.p-button) {
-    border: none;
-    background: #053741;
-    color: #fff;
-    border-radius: 5px;
-    padding: 0.42rem 0.9rem;
-}
-
-:deep(.submit-btn.p-button) {
-    border: none;
-    background: #ff6666;
-    color: #fff;
-    border-radius: 5px;
-    padding: 0.42rem 1.55rem;
-}
-
-:deep(.documents-dialog.p-dialog) {
-    width: min(520px, 100%);
-}
-
-:deep(.documents-dialog .p-dialog-content) {
-    background: #ece9dd;
-    padding: 0.8rem;
-}
-
-:deep(.documents-dialog .p-dialog-header) {
-    background: #0a4d57;
-    color: #fff;
-    padding: 0.42rem 0.65rem;
-}
-
-:deep(.documents-dialog .p-dialog-title) {
-    width: 100%;
-}
-
-:deep(.documents-dialog .p-dialog-header-icon) {
-    color: #fff;
-}
-
-:deep(.document-item.p-button) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: none;
-    background: #abd2c7;
-    color: #11444d;
-    border-radius: 4px;
-    padding: 0.45rem 0.6rem;
-}
-
 @media (max-width: 960px) {
     .cols-3 {
         grid-template-columns: 1fr 1fr;
     }
-
-    .field-block-full {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 700px) {
-    .create-offer-page {
-        padding: 0.85rem 0.75rem 1.8rem;
-    }
-
     .cols-3 {
         grid-template-columns: 1fr;
     }
-
     .fields-grid {
         gap: 0.55rem;
-    }
-
-    .offer-footer {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    :deep(.docs-btn.p-button),
-    :deep(.submit-btn.p-button) {
-        width: 100%;
     }
 }
 </style>

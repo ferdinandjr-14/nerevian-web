@@ -68,12 +68,12 @@ app.use(PrimeVue, {
         },
         select: {
             transition: {
-                enterFromClass: "opacity-0 scale-y-0 translate-y-40",
-                enterActiveClass: "transition-all duration-300 ease-in-out origin-top",
-                enterToClass: "opacity-100 scale-y-100",
-                leaveFromClass: "opacity-100 scale-y-100",
-                leaveActiveClass: "transition-all duration-300 ease-in-out origin-top",
-                leaveToClass: "opacity-0 scale-y-0",
+                enterFromClass: "opacity-0",
+                enterActiveClass: "transition-all duration-300 ease-in-out",
+                enterToClass: "opacity-100",
+                leaveFromClass: "opacity-100",
+                leaveActiveClass: "transition-all duration-300 ease-in-out",
+                leaveToClass: "opacity-0",
             },
         },
     },

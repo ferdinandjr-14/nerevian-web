@@ -2,7 +2,6 @@ import apiClient from "./api"
 
 export const TRANSPORT_TYPE = {
     MARITIME: 1,
-    AIR: 3,
 }
 
 const getTodayValue = () => {
@@ -45,11 +44,12 @@ const formatDateForDisplay = (value) => {
 const getIncotermCode = (offer) => offer.incoterm?.tipus_incoterm?.codi?.trim() || "-"
 
 export const createEmptyOfferForm = () => ({
-    tipus_transport_id: null,
+    tipus_transport_id: 1,
     tipus_fluxe_id: null,
     tipus_carrega_id: null,
     incoterm_id: null,
     client_id: null,
+    agent_commercial_id: null,
     comentaris: "",
     transportista_id: null,
     pes_brut: "",
@@ -57,8 +57,6 @@ export const createEmptyOfferForm = () => ({
     tipus_validacio_id: null,
     port_origen_id: null,
     port_desti_id: null,
-    aeroport_origen_id: null,
-    aeroport_desti_id: null,
     linia_transport_maritim_id: null,
     data_creacio: getTodayValue(),
     data_validessa_inicial: "",
@@ -68,7 +66,7 @@ export const createEmptyOfferForm = () => ({
 
 export const assignOfferToForm = (form, offer) => {
     Object.assign(form, createEmptyOfferForm(), {
-        tipus_transport_id: toNumberOrNull(offer.tipus_transport_id),
+        tipus_transport_id: 1,
         tipus_fluxe_id: toNumberOrNull(offer.tipus_fluxe_id),
         tipus_carrega_id: toNumberOrNull(offer.tipus_carrega_id),
         incoterm_id: toNumberOrNull(offer.incoterm_id),
@@ -80,8 +78,6 @@ export const assignOfferToForm = (form, offer) => {
         tipus_validacio_id: toNumberOrNull(offer.tipus_validacio_id),
         port_origen_id: toNumberOrNull(offer.port_origen_id),
         port_desti_id: toNumberOrNull(offer.port_desti_id),
-        aeroport_origen_id: toNumberOrNull(offer.aeroport_origen_id),
-        aeroport_desti_id: toNumberOrNull(offer.aeroport_desti_id),
         linia_transport_maritim_id: toNumberOrNull(offer.linia_transport_maritim_id),
         data_creacio: formatDateForInput(offer.data_creacio, getTodayValue()),
         data_validessa_inicial: formatDateForInput(offer.data_validessa_inicial),
@@ -113,6 +109,7 @@ export const createOfferPayload = (form) => ({
     tipus_carrega_id: toNumberOrNull(form.tipus_carrega_id),
     incoterm_id: toNumberOrNull(form.incoterm_id),
     client_id: toNumberOrNull(form.client_id),
+    agent_commercial_id: toNumberOrNull(form.agent_commercial_id),
     comentaris: form.comentaris?.trim() || null,
     transportista_id: toNumberOrNull(form.transportista_id),
     pes_brut: toNumberOrNull(form.pes_brut),
@@ -179,4 +176,8 @@ export const fetchOfferById = async (id) => {
 export const fetchOfferLookups = async () => {
     const { data } = await apiClient.get("/lookups")
     return data
+}
+
+export const createOffer = async (formData) => {
+    await apiClient.post("/offers", formData)
 }
