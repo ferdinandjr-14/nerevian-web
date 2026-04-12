@@ -42,8 +42,12 @@
         </header>
 
         <p v-if="errorMessage" class="mt-4 text-red-600">{{ errorMessage }}</p>
-        <p v-else-if="isLoading" class="mt-4 text-secondary">Loading offers...</p>
-
+        <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
+            <span
+                class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+            />
+            Loading offers
+        </div>
         <div class="mt-5" v-else>
             <OfferList :offers="filteredOffers" @view="goToOfferDetails" />
         </div>

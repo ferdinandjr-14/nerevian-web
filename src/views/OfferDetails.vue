@@ -1,24 +1,35 @@
 <template>
-    <section class="create-offer-page bg-primary!">
-        <header class="offer-topbar">
-            <Button icon="pi pi-arrow-left" text class="back-btn" type="button" @click="goBack" />
-
-            <div class="topbar-right">
-                <span v-if="statusLabel" class="status-badge">{{ statusLabel }}</span>
-            </div>
+    <p v-if="loadError" class="mt-[0.45rem] text-[#b42318]">{{ loadError }}</p>
+    <div v-else-if="isLoading" class="flex items-center gap-2">
+        <span
+            class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+        />
+        Loading offer details
+    </div>
+    <section
+        v-else
+        class="create-offer-page bg-primary! max-[700px]:px-3 max-[700px]:pt-[0.85rem] max-[700px]:pb-[1.8rem]"
+    >
+        <header class="flex justify-between mt-5">
+            <Button
+                icon="pi pi-arrow-left"
+                text
+                class="cursor-pointer"
+                type="button"
+                @click="goBack"
+            />
+            <StatusBadge :statusId="statusId" />
         </header>
-
-        <p v-if="loadError" class="feedback-message feedback-error">{{ loadError }}</p>
 
         <Accordion v-model:value="openSections" multiple class="offer-accordion">
             <AccordionPanel
                 v-for="section in sections"
                 :key="section.key"
                 :value="section.key"
-                class="bg-accent-muted mt-10 rounded-lg"
+                class="bg-accent-muted mt-10 rounded-xl"
             >
                 <AccordionHeader
-                    class="bg-accent w-full text-left px-4 py-4 text-primary flex justify-between rounded-lg items-center cursor-pointer hover:bg-secondary-muted transition-all duration-300 ease-in-out"
+                    class="bg-accent w-full text-left px-4 py-4 text-primary flex justify-between rounded-xl items-center cursor-pointer hover:bg-secondary-muted transition-all duration-300 ease-in-out"
                 >
                     {{ section.title }}
                 </AccordionHeader>
@@ -35,7 +46,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Transport Type</span>
                             <Select
@@ -47,7 +57,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Flow</span>
                             <Select
@@ -59,7 +68,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Cargo Type</span>
                             <Select
@@ -71,7 +79,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Incoterm</span>
                             <Select
@@ -83,7 +90,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Validation Type</span>
                             <Select
@@ -109,7 +115,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Port of Origin</span>
                             <Select
@@ -121,7 +126,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Port of Destination</span>
                             <Select
@@ -133,7 +137,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isAirTransport">
                             <span>Airport of Origin</span>
                             <Select
@@ -145,7 +148,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isAirTransport">
                             <span>Airport of Destination</span>
                             <Select
@@ -157,7 +159,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Shipping Line</span>
                             <Select
@@ -169,7 +170,6 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block" v-if="isMaritimeTransport">
                             <span>Container Type</span>
                             <Select
@@ -181,12 +181,10 @@
                                 disabled
                             />
                         </label>
-
                         <label class="field-block">
                             <span>Gross Weight (kg)</span>
                             <InputText v-model="form.pes_brut" type="number" disabled />
                         </label>
-
                         <label class="field-block">
                             <span>Volume (m3)</span>
                             <InputText v-model="form.volum" type="number" disabled />
@@ -198,17 +196,14 @@
                             <span>Created Date</span>
                             <InputText v-model="form.data_creacio" type="date" disabled />
                         </label>
-
                         <label class="field-block">
                             <span>Validity Start</span>
                             <InputText v-model="form.data_validessa_inicial" type="date" disabled />
                         </label>
-
                         <label class="field-block">
                             <span>Validity End</span>
                             <InputText v-model="form.data_validessa_fina" type="date" disabled />
                         </label>
-
                         <label class="field-block">
                             <span>Status</span>
                             <InputText :modelValue="statusLabel" type="text" disabled />
@@ -216,13 +211,13 @@
                     </div>
 
                     <div v-if="section.key === 'additional'" class="fields-grid cols-3">
-                        <label class="field-block field-block-full">
+                        <label class="field-block col-span-full">
                             <span>Comments</span>
                             <Textarea
                                 v-model="form.comentaris"
                                 rows="4"
                                 autoResize
-                                class="bg-primary rounded-b-xl rounded-tr-xl shadow-lg px-4 py-2 max-h-50 outline-0 input-shadow"
+                                class="bg-primary rounded-b-xl rounded-tr-xl shadow-[2px_2px_4px_1px_rgb(124,124,124)] px-4 py-2 max-h-50 outline-0"
                                 disabled
                             />
                         </label>
@@ -231,8 +226,10 @@
             </AccordionPanel>
         </Accordion>
 
-        <footer class="offer-footer">
-            <div class="footer-left">
+        <footer
+            class="mt-12 flex max-[700px]:grid max-[700px]:grid-cols-1 justify-between items-center gap-3.5"
+        >
+            <div>
                 <Button
                     icon="pi pi-eye"
                     label="CHECK DOCUMENTS"
@@ -246,22 +243,34 @@
         <Dialog
             v-model:visible="showDocumentsModal"
             modal
-            class="documents-dialog"
+            class="pb-5 min-h-100 min-w-100 rounded-lg bg-primary"
             :draggable="false"
+            :pt="{
+                mask: {
+                    class: 'bg-black/40 backdrop-blur-xs',
+                },
+                header: {
+                    class: 'relative p-0',
+                },
+                headerActions: {
+                    class: 'absolute right-3 top-3 text-primary cursor-pointer outline-0',
+                },
+            }"
         >
             <template #header>
-                <div class="documents-header">
-                    <h3>DOCUMENTS</h3>
-                </div>
+                <h3 class="bg-secondary p-3 text-primary text-center font-semibold rounded-t-lg">
+                    DOCUMENTS
+                </h3>
             </template>
-
-            <div class="documents-list">
-                <p v-if="!documents.length" class="documents-empty">No documents uploaded yet.</p>
+            <div class="flex flex-col gap-2 bg-primary p-3">
+                <p v-if="!documents.length" class="m-0 text-[#2c575e]">
+                    No documents uploaded yet.
+                </p>
                 <Button
                     v-for="(doc, index) in documents"
                     :key="`${doc.name}-${index}`"
                     type="button"
-                    class="document-item"
+                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between"
                     @click="downloadDocument(doc)"
                 >
                     <span>{{ doc.name }}</span>
@@ -285,6 +294,7 @@ import {
     fetchOfferLookups,
     mapLookupOption,
 } from "@/services/offers"
+import StatusBadge from "@/components/StatusBadge.vue"
 
 const sections = [
     { key: "general", title: "General Information" },
@@ -311,10 +321,12 @@ const lookups = reactive({
     linies_transport_maritim: [],
 })
 
-const statusLabel = ref("Pending")
+const statusId = ref()
+const statusLabel = ref("")
 const loadError = ref("")
 const documents = ref([])
 const showDocumentsModal = ref(false)
+const isLoading = ref(true)
 
 const transportOptions = computed(() =>
     mapLookupOption(lookups.tipus_transports, (item) => item.tipus),
@@ -407,8 +419,10 @@ const loadPageData = async () => {
         lookups.linies_transport_maritim = lookupData.linies_transport_maritim ?? []
 
         assignOfferToForm(form, offer)
-        statusLabel.value = offer.estat_oferta?.estat ?? "Pending"
+        statusId.value = offer.estat_oferta_id
+        statusLabel.value = offer.estat_oferta.estat
         documents.value = getOfferDocuments(offer.id)
+        isLoading.value = false
     } catch (error) {
         if (error instanceof AxiosError) {
             loadError.value = error.response?.data?.message || "Unable to load offer."
@@ -430,33 +444,6 @@ watch(
 </script>
 
 <style scoped>
-.create-offer-page {
-    min-height: 100vh;
-    background: #e8e8dd;
-    padding: 1rem 1rem 2rem;
-}
-
-.offer-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.85rem;
-}
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.status-badge {
-    background: #1f7a8c;
-    color: #fff;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    text-transform: capitalize;
-}
-
 .fields-grid {
     display: grid;
     gap: 0.62rem 1.8rem;
@@ -476,16 +463,12 @@ watch(
     [data-pc-name="select"] {
         display: flex;
         background-color: var(--color-primary);
-        border-radius: 0px 8px 8px;
+        border-radius: 0px 12px 12px;
         padding: 12px;
         align-items: center;
         justify-content: space-between;
         box-shadow: 2px 2px 4px 1px rgb(124, 124, 124);
     }
-}
-
-.field-block-full {
-    grid-column: 1 / -1;
 }
 
 .field-block span {
@@ -498,181 +481,19 @@ watch(
     text-align: start;
 }
 
-.offer-footer {
-    margin-top: 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.8rem;
-}
-
-.feedback-message {
-    margin-top: 0.45rem;
-}
-
-.feedback-error {
-    color: #b42318;
-}
-
-.documents-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    min-height: 210px;
-}
-
-.documents-empty {
-    margin: 0;
-    color: #2c575e;
-}
-
-.documents-header h3 {
-    margin: 0;
-    letter-spacing: 0.4px;
-    font-weight: 600;
-}
-
-.input-shadow {
-    box-shadow: 2px 2px 4px 1px rgb(124, 124, 124);
-}
-
-:deep(.back-btn.p-button) {
-    border: none;
-    background: transparent;
-    color: #118c8c;
-    font-weight: 900;
-    line-height: 1;
-    text-shadow: 0 1px 0 rgba(4, 53, 53, 0.25);
-    padding: 0;
-    min-width: 24px;
-}
-
-:deep(.offer-accordion.p-accordion) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-:deep(.offer-accordion .p-accordionpanel) {
-    background: #abd2c7;
-    border-radius: 8px;
-    overflow: hidden;
-    border: none;
-}
-
-:deep(.offer-accordion .p-accordionheader) {
-    background: #118c8c;
-    color: #e9f6f5;
-}
-
-:deep(.offer-accordion .p-accordionheader-content) {
-    padding: 0.52rem 0.8rem;
-}
-
-:deep(.offer-accordion .p-accordionheader-toggle-icon) {
-    color: #e9f6f5;
-}
-
-:deep(.offer-accordion .p-accordioncontent-content) {
-    padding: 0.72rem 0.9rem 0.95rem;
-    background: #abd2c7;
-}
-
-:deep(.field-block .p-inputtext),
-:deep(.field-block .p-textarea),
-:deep(.field-block .p-select) {
-    border: none;
-    border-radius: 5px;
-    background: #ece9dd;
-    min-height: 40px;
-    padding: 0.28rem 0.42rem;
-    color: #183e44;
-    box-shadow: none;
-    width: 100%;
-}
-
-:deep(.field-block .p-select-label),
-:deep(.field-block .p-select-dropdown) {
-    color: #183e44;
-}
-
-:deep(.field-block .p-textarea) {
-    min-height: 64px;
-    resize: vertical;
-}
-
-:deep(.docs-btn.p-button) {
-    border: none;
-    background: #053741;
-    color: #fff;
-    border-radius: 5px;
-    padding: 0.42rem 0.9rem;
-}
-
-:deep(.documents-dialog.p-dialog) {
-    width: min(520px, 100%);
-}
-
-:deep(.documents-dialog .p-dialog-content) {
-    background: #ece9dd;
-    padding: 0.8rem;
-}
-
-:deep(.documents-dialog .p-dialog-header) {
-    background: #0a4d57;
-    color: #fff;
-    padding: 0.42rem 0.65rem;
-}
-
-:deep(.documents-dialog .p-dialog-title) {
-    width: 100%;
-}
-
-:deep(.documents-dialog .p-dialog-header-icon) {
-    color: #fff;
-}
-
-:deep(.document-item.p-button) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: none;
-    background: #abd2c7;
-    color: #11444d;
-    border-radius: 4px;
-    padding: 0.45rem 0.6rem;
-}
-
 @media (max-width: 960px) {
     .cols-3 {
         grid-template-columns: 1fr 1fr;
     }
-
-    .field-block-full {
-        grid-column: 1 / -1;
-    }
 }
 
 @media (max-width: 700px) {
-    .create-offer-page {
-        padding: 0.85rem 0.75rem 1.8rem;
-    }
-
     .cols-3 {
         grid-template-columns: 1fr;
     }
 
     .fields-grid {
         gap: 0.55rem;
-    }
-
-    .offer-footer {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    :deep(.docs-btn.p-button) {
-        width: 100%;
     }
 }
 </style>
