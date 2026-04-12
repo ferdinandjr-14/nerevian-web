@@ -1,6 +1,13 @@
 <template>
-    <section class="user-panel-page">
-        <Tabs v-model:value="activeRoleTab">
+    <p v-if="pageError" class="mb-4 text-red-600">{{ pageError }}</p>
+    <div v-if="isLoading" class="flex items-center gap-2 mt-5">
+        <span
+            class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+        />
+        Loading users
+    </div>
+    <section v-else class="pb-10">
+        <Tabs v-if="roleTabs.length" v-model:value="activeRoleTab">
             <TabList>
                 <Tab
                     v-for="role in roleTabs"
@@ -12,8 +19,9 @@
                             ? 'border-b-4'
                             : 'border-b-4 border-b-accent-muted hover:border-b-secondary transition-all duration-300 ease-in-out',
                     ]"
-                    >{{ role.label }}</Tab
                 >
+                    {{ role.label }}
+                </Tab>
             </TabList>
             <TabPanels>
                 <Button
@@ -26,7 +34,7 @@
                     <DataTable
                         v-model:filters="tableFilters"
                         :value="usersByRole(role.value)"
-                        :globalFilterFields="['id', 'name', 'surname', 'email']"
+                        :globalFilterFields="['id', 'name', 'surname', 'email', 'clientName']"
                         class="users-table"
                         dataKey="id"
                         paginator
@@ -81,68 +89,39 @@
                             </div>
                         </template>
 
-                        <Column
-                            field="id"
-                            header="ID"
-                            sortable
-                            :pt="{
-                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
-                                bodyCell: {
-                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
-                                },
-                                columnheadercontent: { class: 'flex items-center gap-3' },
-                            }"
-                        >
+                        <Column field="id" header="ID" sortable :pt="columnPT">
                             <template #body="{ data }">
                                 <span class="text-secondary text-lg">{{ data.id }}</span>
                             </template>
                         </Column>
-                        <Column
-                            field="name"
-                            header="NAME"
-                            sortable
-                            :pt="{
-                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
-                                bodyCell: {
-                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
-                                },
-                                columnheadercontent: { class: 'flex items-center gap-3' },
-                            }"
-                        >
+                        <Column field="name" header="NAME" sortable :pt="columnPT">
                             <template #body="{ data }">
-                                <span class="text-secondary text-lg">{{ data.name }}</span>
+                                <span class="text-secondary text-lg">{{ data.name || "-" }}</span>
                             </template>
                         </Column>
-                        <Column
-                            field="surname"
-                            header="SURNAME"
-                            sortable
-                            :pt="{
-                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
-                                bodyCell: {
-                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
-                                },
-                                columnheadercontent: { class: 'flex items-center gap-3' },
-                            }"
-                        >
+                        <Column field="surname" header="SURNAME" sortable :pt="columnPT">
                             <template #body="{ data }">
-                                <span class="text-secondary text-lg">{{ data.surname }}</span>
+                                <span class="text-secondary text-lg">{{
+                                    data.surname || "-"
+                                }}</span>
                             </template>
                         </Column>
-                        <Column
-                            field="email"
-                            header="EMAIL"
-                            sortable
-                            :pt="{
-                                headerCell: { class: 'px-6 py-4 text-left text-primary' },
-                                bodyCell: {
-                                    class: 'px-6 py-5 bg-accent-muted text-secondary font-medium border-r',
-                                },
-                                columnheadercontent: { class: 'flex items-center gap-3' },
-                            }"
-                        >
+                        <Column field="email" header="EMAIL" sortable :pt="columnPT">
                             <template #body="{ data }">
                                 <span class="text-secondary text-lg">{{ data.email }}</span>
+                            </template>
+                        </Column>
+                        <Column
+                            field="clientName"
+                            header="CLIENT"
+                            sortable
+                            :pt="columnPT"
+                            v-if="activeRoleTab === 'client'"
+                        >
+                            <template #body="{ data }">
+                                <span class="text-secondary text-lg">{{
+                                    data.clientName || "-"
+                                }}</span>
                             </template>
                         </Column>
                         <Column
@@ -168,7 +147,15 @@
                                         icon="pi pi-trash"
                                         text
                                         type="button"
-                                        class="cursor-pointer text-red-400"
+                                        :disabled="
+                                            isCurrentUser(data.id) || deletingUserId === data.id
+                                        "
+                                        :class="[
+                                            'cursor-pointer',
+                                            isCurrentUser(data.id) || deletingUserId === data.id
+                                                ? 'text-secondary/40 cursor-not-allowed'
+                                                : 'text-red-400',
+                                        ]"
                                         aria-label="Delete user"
                                         @click="openDeleteConfirm($event, data)"
                                     />
@@ -183,6 +170,7 @@
                 </TabPanel>
             </TabPanels>
         </Tabs>
+        <p v-else class="text-secondary text-lg">No roles available.</p>
 
         <Dialog
             v-model:visible="showUserModal"
@@ -208,8 +196,11 @@
                     class: 'bg-primary px-6 py-4 flex justify-end gap-3',
                 },
             }"
+            @hide="handleDialogHide"
         >
             <div class="flex flex-col gap-4">
+                <p v-if="submitError" class="text-sm text-red-600">{{ submitError }}</p>
+
                 <label class="flex flex-col gap-1.5">
                     <span class="text-dark font-medium text-sm">NAME</span>
                     <InputText
@@ -235,7 +226,9 @@
                     />
                 </label>
                 <label class="flex flex-col gap-1.5">
-                    <span class="text-dark font-medium text-sm">PASSWORD</span>
+                    <span class="text-dark font-medium text-sm">
+                        {{ isEditing ? "PASSWORD (OPTIONAL)" : "PASSWORD" }}
+                    </span>
                     <Password
                         v-model="userForm.password"
                         :feedback="false"
@@ -245,39 +238,46 @@
                     />
                 </label>
                 <label class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">
+                        {{ isEditing ? "CONFIRM PASSWORD (OPTIONAL)" : "CONFIRM PASSWORD" }}
+                    </span>
+                    <Password
+                        v-model="userForm.passwordConfirmation"
+                        :feedback="false"
+                        toggleMask
+                        inputClass="w-full border-0 outline-0 ring-0"
+                        class="flex w-full border border-secondary px-3 py-2 rounded-lg items-center"
+                    />
+                </label>
+                <label class="flex flex-col gap-1.5">
                     <span class="text-dark font-medium text-sm">ROLE</span>
                     <Select
-                        v-model="userForm.role"
-                        :options="roleTabs"
+                        v-model="userForm.roleId"
+                        :options="roleOptions"
                         optionLabel="label"
                         optionValue="value"
-                        :pt="{
-                            root: {
-                                class: 'border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary flex items-center justify-between outline-none cursor-pointer focus:border-accent',
-                            },
-                            label: { class: 'text-dark' },
-                            dropdown: { class: 'text-dark/70' },
-                            overlay: {
-                                class: 'bg-primary border border-secondary-muted rounded-lg mt-1 shadow-lg z-50 overflow-hidden',
-                            },
-                            option: ({ context }) => ({
-                                class: [
-                                    'px-4 py-2 cursor-pointer transition-colors',
-                                    context.selected
-                                        ? 'bg-accent text-primary'
-                                        : 'text-dark hover:bg-secondary-muted',
-                                ],
-                            }),
-                            list: { class: 'py-1' },
-                        }"
+                        :pt="selectPT"
+                    />
+                </label>
+                <label v-if="isClientRoleSelected" class="flex flex-col gap-1.5">
+                    <span class="text-dark font-medium text-sm">CLIENT</span>
+                    <Select
+                        v-model="userForm.clientId"
+                        :options="clientOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        filter
+                        placeholder="Select client"
+                        :pt="selectPT"
                     />
                 </label>
             </div>
             <template #footer>
                 <Button
-                    :label="isEditing ? 'SAVE' : 'CREATE'"
+                    :label="isSubmitting ? 'SAVING...' : isEditing ? 'SAVE' : 'CREATE'"
                     type="button"
-                    class="bg-danger text-primary px-6 py-2 rounded-lg cursor-pointer font-medium hover:opacity-90 transition-opacity outline-none border-0"
+                    :disabled="isSubmitting"
+                    class="bg-danger text-primary px-6 py-2 rounded-lg cursor-pointer font-medium hover:opacity-90 transition-opacity outline-none border-0 disabled:opacity-60 disabled:cursor-not-allowed"
                     @click="saveUser"
                 />
             </template>
@@ -316,100 +316,56 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue"
-import { useRouter } from "vue-router"
+import { computed, onMounted, reactive, ref, watch } from "vue"
 import { useConfirm } from "primevue/useconfirm"
 import { FilterMatchMode } from "@primevue/core/api"
+import { authState } from "@/services/auth"
+import {
+    createAdminUser,
+    deleteAdminUser,
+    fetchAdminClients,
+    fetchAdminRoles,
+    fetchAdminUsers,
+    updateAdminUser,
+} from "@/services/users"
 
-const router = useRouter()
 const confirm = useConfirm()
-const nextIdSeed = ref(11235423)
 
-const roleTabs = [
-    { label: "Operator", value: "operator" },
-    { label: "Commercial", value: "commercial" },
-    { label: "Clients", value: "client" },
-]
+const selectPT = {
+    root: {
+        class: "border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary flex items-center justify-between outline-none cursor-pointer focus:border-accent",
+    },
+    label: { class: "text-dark" },
+    dropdown: { class: "text-dark/70" },
+    overlay: {
+        class: "bg-primary border border-secondary-muted rounded-lg mt-1 shadow-lg z-50 overflow-hidden",
+    },
+    option: ({ context }) => ({
+        class: [
+            "px-4 py-2 cursor-pointer transition-colors",
+            context.selected ? "bg-accent text-primary" : "text-dark hover:bg-secondary-muted",
+        ],
+    }),
+    list: { class: "py-1" },
+}
 
-const activeRoleTab = ref("operator")
+const columnPT = {
+    headerCell: { class: "px-6 py-4 text-left text-primary" },
+    bodyCell: {
+        class: "px-6 py-5 bg-accent-muted text-secondary font-medium border-r",
+    },
+    columnheadercontent: { class: "flex items-center gap-3" },
+}
 
-const users = ref([
-    { id: 11235423, name: "Jane", surname: "Doe", email: "janedoe@nerevian.com", role: "operator" },
-    {
-        id: 11235424,
-        name: "Carlos",
-        surname: "Ruiz",
-        email: "cruiz@nerevian.com",
-        role: "commercial",
-    },
-    { id: 11235425, name: "Ana", surname: "Pardo", email: "apardo@nerevian.com", role: "client" },
-    {
-        id: 11235426,
-        name: "Luis",
-        surname: "Ibarra",
-        email: "libarra@nerevian.com",
-        role: "operator",
-    },
-    {
-        id: 11235427,
-        name: "Marta",
-        surname: "Vega",
-        email: "mvega@nerevian.com",
-        role: "commercial",
-    },
-    { id: 11235428, name: "David", surname: "Soler", email: "dsoler@nerevian.com", role: "client" },
-    {
-        id: 11235429,
-        name: "Irene",
-        surname: "Nieto",
-        email: "inieto@nerevian.com",
-        role: "operator",
-    },
-    {
-        id: 11235430,
-        name: "Pablo",
-        surname: "Mora",
-        email: "pmora@nerevian.com",
-        role: "commercial",
-    },
-    {
-        id: 11235431,
-        name: "Nora",
-        surname: "Campos",
-        email: "ncampos@nerevian.com",
-        role: "client",
-    },
-    {
-        id: 11235432,
-        name: "Mario",
-        surname: "Costa",
-        email: "mcosta@nerevian.com",
-        role: "operator",
-    },
-    {
-        id: 11235433,
-        name: "Julia",
-        surname: "Lozano",
-        email: "jlozano@nerevian.com",
-        role: "commercial",
-    },
-    { id: 11235434, name: "Eric", surname: "Sanz", email: "esanz@nerevian.com", role: "client" },
-    {
-        id: 11235435,
-        name: "Sofia",
-        surname: "Ramos",
-        email: "sramos@nerevian.com",
-        role: "operator",
-    },
-    {
-        id: 11235436,
-        name: "Alvaro",
-        surname: "Bellido",
-        email: "abellido@nerevian.com",
-        role: "commercial",
-    },
-])
-
+const roleOptions = ref([])
+const clientOptions = ref([])
+const users = ref([])
+const activeRoleTab = ref(null)
+const isLoading = ref(true)
+const isSubmitting = ref(false)
+const deletingUserId = ref(null)
+const pageError = ref("")
+const submitError = ref("")
 const showUserModal = ref(false)
 const isEditing = ref(false)
 const selectedUserId = ref(null)
@@ -419,7 +375,9 @@ const userForm = reactive({
     surname: "",
     email: "",
     password: "",
-    role: "operator",
+    passwordConfirmation: "",
+    roleId: null,
+    clientId: null,
 })
 
 const tableFilters = ref({
@@ -428,16 +386,61 @@ const tableFilters = ref({
     name: { value: null, matchMode: FilterMatchMode.CONTAINS },
     surname: { value: null, matchMode: FilterMatchMode.CONTAINS },
     email: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    clientName: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const usersByRole = (role) => users.value.filter((user) => user.role === role)
+const roleTabs = computed(() =>
+    roleOptions.value.map((role) => ({
+        label: role.label,
+        value: role.key,
+    })),
+)
+
+const selectedRoleOption = computed(() => {
+    const roleId = Number(userForm.roleId)
+    return roleOptions.value.find((role) => role.id === roleId) ?? null
+})
+
+const isClientRoleSelected = computed(() => selectedRoleOption.value?.key === "client")
+
+const resolveDefaultRole = () =>
+    roleOptions.value.find((role) => role.key === activeRoleTab.value) ??
+    roleOptions.value[0] ??
+    null
+
+const usersByRole = (roleKey) => users.value.filter((user) => user.roleKey === roleKey)
+
+const sortUsers = (items) => [...items].sort((left, right) => left.id - right.id)
+
+const firstErrorMessage = (error, fallbackMessage) => {
+    const validationErrors = error.response?.data?.errors
+
+    if (validationErrors && typeof validationErrors === "object") {
+        const firstFieldErrors = Object.values(validationErrors)[0]
+
+        if (Array.isArray(firstFieldErrors) && firstFieldErrors.length) {
+            return firstFieldErrors[0]
+        }
+    }
+
+    return error.response?.data?.message || fallbackMessage
+}
 
 const resetUserForm = () => {
+    const defaultRole = resolveDefaultRole()
+
     userForm.name = ""
     userForm.surname = ""
     userForm.email = ""
     userForm.password = ""
-    userForm.role = activeRoleTab.value
+    userForm.passwordConfirmation = ""
+    userForm.roleId = defaultRole?.id ?? null
+    userForm.clientId = null
+    submitError.value = ""
+}
+
+const handleDialogHide = () => {
+    submitError.value = ""
 }
 
 const openCreateModal = () => {
@@ -454,37 +457,85 @@ const openEditModal = (user) => {
     userForm.surname = user.surname
     userForm.email = user.email
     userForm.password = ""
-    userForm.role = user.role
+    userForm.passwordConfirmation = ""
+    userForm.roleId = user.roleId
+    userForm.clientId = user.clientId
+    submitError.value = ""
     showUserModal.value = true
 }
 
-const saveUser = () => {
-    if (!userForm.name || !userForm.surname || !userForm.email || !userForm.role) return
+const upsertUser = (user) => {
+    const existingIndex = users.value.findIndex((item) => item.id === user.id)
 
-    if (isEditing.value && selectedUserId.value !== null) {
-        const target = users.value.find((user) => user.id === selectedUserId.value)
-        if (!target) return
-        target.name = userForm.name
-        target.surname = userForm.surname
-        target.email = userForm.email
-        target.role = userForm.role
-        showUserModal.value = false
+    if (existingIndex === -1) {
+        users.value = sortUsers([...users.value, user])
         return
     }
 
-    nextIdSeed.value += 1
-    users.value.unshift({
-        id: nextIdSeed.value,
-        name: userForm.name,
-        surname: userForm.surname,
-        email: userForm.email,
-        role: userForm.role,
-    })
-    showUserModal.value = false
+    const nextUsers = [...users.value]
+    nextUsers.splice(existingIndex, 1, user)
+    users.value = sortUsers(nextUsers)
 }
 
+const validateUserForm = () => {
+    if (!userForm.name.trim() || !userForm.email.trim() || !userForm.roleId) {
+        return "Name, email, and role are required."
+    }
+
+    if (!isEditing.value && !userForm.password) {
+        return "Password is required for new users."
+    }
+
+    if (userForm.password || userForm.passwordConfirmation) {
+        if (userForm.password.length < 8) {
+            return "Password must contain at least 8 characters."
+        }
+
+        if (userForm.password !== userForm.passwordConfirmation) {
+            return "Passwords do not match."
+        }
+    }
+
+    if (isClientRoleSelected.value && !userForm.clientId) {
+        return "Client is required when the selected role is Clients."
+    }
+
+    return ""
+}
+
+const saveUser = async () => {
+    submitError.value = validateUserForm()
+
+    if (submitError.value) {
+        return
+    }
+
+    isSubmitting.value = true
+
+    try {
+        const savedUser =
+            isEditing.value && selectedUserId.value !== null
+                ? await updateAdminUser(selectedUserId.value, userForm)
+                : await createAdminUser(userForm)
+
+        upsertUser(savedUser)
+        activeRoleTab.value = savedUser.roleKey || activeRoleTab.value
+        showUserModal.value = false
+        handleDialogHide()
+    } catch (error) {
+        submitError.value = firstErrorMessage(error, "Unable to save user.")
+    } finally {
+        isSubmitting.value = false
+    }
+}
+
+const isCurrentUser = (userId) => Number(authState.user?.id) === Number(userId)
+
 const openDeleteConfirm = (event, user) => {
-    selectedUserId.value = user.id
+    if (isCurrentUser(user.id)) {
+        return
+    }
+
     confirm.require({
         target: event.currentTarget,
         message: "Are you sure you want to delete this user?",
@@ -492,12 +543,59 @@ const openDeleteConfirm = (event, user) => {
         rejectLabel: "CANCEL",
         acceptLabel: "DELETE",
         reject: () => {
-            selectedUserId.value = null
+            deletingUserId.value = null
         },
-        accept: () => {
-            users.value = users.value.filter((item) => item.id !== selectedUserId.value)
-            selectedUserId.value = null
+        accept: async () => {
+            deletingUserId.value = user.id
+            pageError.value = ""
+
+            try {
+                await deleteAdminUser(user.id)
+                users.value = users.value.filter((item) => item.id !== user.id)
+            } catch (error) {
+                pageError.value = firstErrorMessage(error, "Unable to delete user.")
+            } finally {
+                deletingUserId.value = null
+            }
         },
     })
 }
+
+const loadUserPanel = async () => {
+    isLoading.value = true
+    pageError.value = ""
+
+    try {
+        const [loadedUsers, loadedRoles, loadedClients] = await Promise.all([
+            fetchAdminUsers(),
+            fetchAdminRoles(),
+            fetchAdminClients(),
+        ])
+
+        users.value = loadedUsers
+        roleOptions.value = loadedRoles
+        clientOptions.value = loadedClients
+
+        const availableRoleKeys = new Set(roleTabs.value.map((role) => role.value))
+
+        activeRoleTab.value = availableRoleKeys.has(activeRoleTab.value)
+            ? activeRoleTab.value
+            : (roleTabs.value[0]?.value ?? null)
+    } catch (error) {
+        pageError.value = firstErrorMessage(error, "Unable to load users.")
+    } finally {
+        isLoading.value = false
+    }
+}
+
+watch(
+    () => userForm.roleId,
+    () => {
+        if (!isClientRoleSelected.value) {
+            userForm.clientId = null
+        }
+    },
+)
+
+onMounted(loadUserPanel)
 </script>
