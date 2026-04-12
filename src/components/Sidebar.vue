@@ -30,11 +30,6 @@
                     >Tracking</RouterLink
                 >
                 <RouterLink
-                    to="/create-offer"
-                    :class="route.name === 'create-offer' ? 'active-link' : ''"
-                    >Create Offer</RouterLink
-                >
-                <RouterLink
                     to="/user-panel"
                     :class="route.name === 'user-panel' ? 'active-link' : ''"
                     >User Panel</RouterLink
