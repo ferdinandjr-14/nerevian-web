@@ -4,8 +4,7 @@
             <Button icon="pi pi-arrow-left" text class="back-btn" type="button" @click="goBack" />
 
             <div class="topbar-right">
-                <span class="status-badge">Pending</span>
-                <Button label="Reset" type="button" class="reset-btn" @click="resetOffer" />
+                <span v-if="statusLabel" class="status-badge">{{ statusLabel }}</span>
             </div>
         </header>
 
@@ -32,9 +31,8 @@
                                 :options="clientOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select client"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -45,9 +43,8 @@
                                 :options="transportOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select transport"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -58,9 +55,8 @@
                                 :options="flowOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select flow"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -71,9 +67,8 @@
                                 :options="cargoOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select cargo type"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -84,9 +79,8 @@
                                 :options="incotermOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select incoterm"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -97,9 +91,8 @@
                                 :options="validationOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select validation"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
                     </div>
@@ -112,9 +105,8 @@
                                 :options="carrierOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select carrier"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -125,10 +117,8 @@
                                 :options="portOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select origin port"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
+                                disabled
                             />
                         </label>
 
@@ -139,10 +129,8 @@
                                 :options="portOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select destination port"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
+                                disabled
                             />
                         </label>
 
@@ -153,10 +141,8 @@
                                 :options="airportOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select origin airport"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
+                                disabled
                             />
                         </label>
 
@@ -167,10 +153,8 @@
                                 :options="airportOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select destination airport"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
-                                filter
+                                disabled
                             />
                         </label>
 
@@ -181,9 +165,8 @@
                                 :options="shippingLineOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select shipping line"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
@@ -194,42 +177,41 @@
                                 :options="containerOptions"
                                 optionLabel="label"
                                 optionValue="value"
-                                placeholder="Select container type"
                                 class="w-full"
-                                :disabled="isLoadingLookups"
+                                disabled
                             />
                         </label>
 
                         <label class="field-block">
                             <span>Gross Weight (kg)</span>
-                            <InputText v-model="form.pes_brut" type="number" min="0" step="0.01" />
+                            <InputText v-model="form.pes_brut" type="number" disabled />
                         </label>
 
                         <label class="field-block">
                             <span>Volume (m3)</span>
-                            <InputText v-model="form.volum" type="number" min="0" step="0.01" />
+                            <InputText v-model="form.volum" type="number" disabled />
                         </label>
                     </div>
 
                     <div v-if="section.key === 'dates'" class="fields-grid cols-3">
                         <label class="field-block">
                             <span>Created Date</span>
-                            <InputText v-model="form.data_creacio" type="date" />
+                            <InputText v-model="form.data_creacio" type="date" disabled />
                         </label>
 
                         <label class="field-block">
                             <span>Validity Start</span>
-                            <InputText v-model="form.data_validessa_inicial" type="date" />
+                            <InputText v-model="form.data_validessa_inicial" type="date" disabled />
                         </label>
 
                         <label class="field-block">
                             <span>Validity End</span>
-                            <InputText v-model="form.data_validessa_fina" type="date" />
+                            <InputText v-model="form.data_validessa_fina" type="date" disabled />
                         </label>
 
                         <label class="field-block">
                             <span>Status</span>
-                            <InputText modelValue="Pending" type="text" disabled />
+                            <InputText :modelValue="statusLabel" type="text" disabled />
                         </label>
                     </div>
 
@@ -241,6 +223,7 @@
                                 rows="4"
                                 autoResize
                                 class="bg-primary rounded-b-xl rounded-tr-xl shadow-lg px-4 py-2 max-h-50 outline-0 input-shadow"
+                                disabled
                             />
                         </label>
                     </div>
@@ -249,37 +232,16 @@
         </Accordion>
 
         <footer class="offer-footer">
-            <input
-                ref="fileInputRef"
-                type="file"
-                multiple
-                class="hidden-file-input"
-                @change="handleDocumentsUpload"
-            />
-
             <div class="footer-left">
                 <Button
-                    icon="pi pi-upload"
-                    label="UPLOAD DOCUMENTS"
+                    icon="pi pi-eye"
+                    label="CHECK DOCUMENTS"
                     type="button"
-                    class="docs-btn"
-                    @click="openFilePicker"
-                />
-            </div>
-
-            <div class="footer-right">
-                <Button
-                    label="SAVE OFFER"
-                    type="button"
-                    class="submit-btn"
-                    :disabled="isSubmitting || isLoadingLookups"
-                    :loading="isSubmitting"
-                    @click="submitOffer"
+                    class="p-2 bg-danger text-primary rounded-lg px-4 flex items-center gap-2 cursor-pointer"
+                    @click="showDocumentsModal = true"
                 />
             </div>
         </footer>
-
-        <p v-if="uploadFeedback" class="feedback-message feedback-success">{{ uploadFeedback }}</p>
 
         <Dialog
             v-model:visible="showDocumentsModal"
@@ -313,17 +275,16 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue"
 import { AxiosError } from "axios"
-import { useRouter } from "vue-router"
-import { saveOfferDocuments } from "@/services/offer-documents"
+import { useRoute, useRouter } from "vue-router"
+import { getOfferDocuments } from "@/services/offer-documents"
 import {
     TRANSPORT_TYPE,
-    clearTransportSpecificFields,
+    assignOfferToForm,
     createEmptyOfferForm,
-    createOfferPayload,
+    fetchOfferById,
     fetchOfferLookups,
     mapLookupOption,
 } from "@/services/offers"
-import apiClient from "@/services/api"
 
 const sections = [
     { key: "general", title: "General Information" },
@@ -332,6 +293,7 @@ const sections = [
     { key: "additional", title: "Additional Details" },
 ]
 
+const route = useRoute()
 const router = useRouter()
 const openSections = ref(sections.map((section) => section.key))
 const form = reactive(createEmptyOfferForm())
@@ -349,13 +311,10 @@ const lookups = reactive({
     linies_transport_maritim: [],
 })
 
-const isLoadingLookups = ref(false)
-const isSubmitting = ref(false)
+const statusLabel = ref("Pending")
 const loadError = ref("")
-const uploadFeedback = ref("")
 const documents = ref([])
 const showDocumentsModal = ref(false)
-const fileInputRef = ref(null)
 
 const transportOptions = computed(() =>
     mapLookupOption(lookups.tipus_transports, (item) => item.tipus),
@@ -411,83 +370,11 @@ const isMaritimeTransport = computed(
 )
 const isAirTransport = computed(() => Number(form.tipus_transport_id) === TRANSPORT_TYPE.AIR)
 
-watch(
-    () => form.tipus_transport_id,
-    () => clearTransportSpecificFields(form),
-)
-
-const loadLookups = async () => {
-    isLoadingLookups.value = true
-    loadError.value = ""
-
-    try {
-        const data = await fetchOfferLookups()
-        lookups.clients = data.clients ?? []
-        lookups.tipus_transports = data.tipus_transports ?? []
-        lookups.tipus_fluxes = data.tipus_fluxes ?? []
-        lookups.tipus_carrega = data.tipus_carrega ?? []
-        lookups.tipus_contenidors = data.tipus_contenidors ?? []
-        lookups.tipus_validacions = data.tipus_validacions ?? []
-        lookups.incoterms = data.incoterms ?? []
-        lookups.aeroports = data.aeroports ?? []
-        lookups.ports = data.ports ?? []
-        lookups.transportistes = data.transportistes ?? []
-        lookups.linies_transport_maritim = data.linies_transport_maritim ?? []
-    } catch (error) {
-        if (error instanceof AxiosError) {
-            loadError.value = error.response?.data?.message || "Unable to load offer data."
-        } else {
-            loadError.value = "Unable to load offer data."
-        }
-    } finally {
-        isLoadingLookups.value = false
-    }
-}
-
-const resetOffer = () => {
-    Object.assign(form, createEmptyOfferForm())
-    documents.value = []
-    uploadFeedback.value = ""
-    loadError.value = ""
-    showDocumentsModal.value = false
-    openSections.value = sections.map((section) => section.key)
-}
-
 const goBack = () => {
     router.push({ name: "offers" })
 }
 
-const openFilePicker = () => {
-    if (fileInputRef.value) fileInputRef.value.click()
-}
-
-const handleDocumentsUpload = (event) => {
-    const fileList = event.target.files
-    if (!fileList || !fileList.length) return
-
-    const nextDocuments = Array.from(fileList).map((file) => ({
-        name: file.name,
-        file,
-        isPreset: false,
-    }))
-
-    documents.value = [...documents.value, ...nextDocuments]
-    uploadFeedback.value = `${nextDocuments.length} document(s) uploaded.`
-    showDocumentsModal.value = true
-    event.target.value = ""
-}
-
 const downloadDocument = (doc) => {
-    if (doc.file) {
-        const objectUrl = URL.createObjectURL(doc.file)
-        const link = document.createElement("a")
-        link.href = objectUrl
-        link.download = doc.name
-        link.click()
-        URL.revokeObjectURL(objectUrl)
-        return
-    }
-
     const placeholderContent = `Document preview placeholder for ${doc.name}`
     const blob = new Blob([placeholderContent], { type: "text/plain" })
     const objectUrl = URL.createObjectURL(blob)
@@ -498,35 +385,48 @@ const downloadDocument = (doc) => {
     URL.revokeObjectURL(objectUrl)
 }
 
-const submitOffer = async () => {
-    isSubmitting.value = true
+const loadPageData = async () => {
     loadError.value = ""
 
     try {
-        const { data } = await apiClient.post("/offers", createOfferPayload(form))
+        const [lookupData, offer] = await Promise.all([
+            fetchOfferLookups(),
+            fetchOfferById(route.params.id),
+        ])
 
-        if (data.offer?.id) {
-            saveOfferDocuments(data.offer.id, documents.value)
-            router.push({ name: "offer-detail", params: { id: String(data.offer.id) } })
-        }
+        lookups.clients = lookupData.clients ?? []
+        lookups.tipus_transports = lookupData.tipus_transports ?? []
+        lookups.tipus_fluxes = lookupData.tipus_fluxes ?? []
+        lookups.tipus_carrega = lookupData.tipus_carrega ?? []
+        lookups.tipus_contenidors = lookupData.tipus_contenidors ?? []
+        lookups.tipus_validacions = lookupData.tipus_validacions ?? []
+        lookups.incoterms = lookupData.incoterms ?? []
+        lookups.aeroports = lookupData.aeroports ?? []
+        lookups.ports = lookupData.ports ?? []
+        lookups.transportistes = lookupData.transportistes ?? []
+        lookups.linies_transport_maritim = lookupData.linies_transport_maritim ?? []
+
+        assignOfferToForm(form, offer)
+        statusLabel.value = offer.estat_oferta?.estat ?? "Pending"
+        documents.value = getOfferDocuments(offer.id)
     } catch (error) {
         if (error instanceof AxiosError) {
-            const fieldErrors = error.response?.data?.errors
-            const firstFieldError = fieldErrors
-                ? Object.values(fieldErrors).flat().find(Boolean)
-                : null
-
-            loadError.value =
-                firstFieldError || error.response?.data?.message || "Unable to save offer."
+            loadError.value = error.response?.data?.message || "Unable to load offer."
         } else {
-            loadError.value = "Unable to save offer."
+            loadError.value = "Unable to load offer."
         }
-    } finally {
-        isSubmitting.value = false
     }
 }
 
-onMounted(loadLookups)
+onMounted(loadPageData)
+
+watch(
+    () => route.params.id,
+    () => {
+        showDocumentsModal.value = false
+        loadPageData()
+    },
+)
 </script>
 
 <style scoped>
@@ -580,6 +480,7 @@ onMounted(loadLookups)
         padding: 12px;
         align-items: center;
         justify-content: space-between;
+        box-shadow: 2px 2px 4px 1px rgb(124, 124, 124);
     }
 }
 
@@ -613,14 +514,6 @@ onMounted(loadLookups)
     color: #b42318;
 }
 
-.feedback-success {
-    color: #1c5259;
-}
-
-.hidden-file-input {
-    display: none;
-}
-
 .documents-list {
     display: flex;
     flex-direction: column;
@@ -652,14 +545,6 @@ onMounted(loadLookups)
     text-shadow: 0 1px 0 rgba(4, 53, 53, 0.25);
     padding: 0;
     min-width: 24px;
-}
-
-:deep(.reset-btn.p-button) {
-    border: 1px solid #7f9da1;
-    background: #f8fbfb;
-    color: #496c71;
-    border-radius: 4px;
-    padding: 0.18rem 0.45rem;
 }
 
 :deep(.offer-accordion.p-accordion) {
@@ -724,14 +609,6 @@ onMounted(loadLookups)
     padding: 0.42rem 0.9rem;
 }
 
-:deep(.submit-btn.p-button) {
-    border: none;
-    background: #ff6666;
-    color: #fff;
-    border-radius: 5px;
-    padding: 0.42rem 1.55rem;
-}
-
 :deep(.documents-dialog.p-dialog) {
     width: min(520px, 100%);
 }
@@ -794,8 +671,7 @@ onMounted(loadLookups)
         grid-template-columns: 1fr;
     }
 
-    :deep(.docs-btn.p-button),
-    :deep(.submit-btn.p-button) {
+    :deep(.docs-btn.p-button) {
         width: 100%;
     }
 }

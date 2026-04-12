@@ -4,7 +4,6 @@
 
 <script setup>
 import { computed } from "vue"
-import { getOfferStatus } from "../data/offers"
 
 const props = defineProps({
     statusId: {
@@ -13,13 +12,25 @@ const props = defineProps({
     },
 })
 
+const STATUS_LABELS = Object.freeze({
+    1: "Pending",
+    2: "Accepted",
+    3: "Rejected",
+    4: "Shipped",
+    5: "Delayed",
+    6: "Finalized",
+    7: "In Transit",
+    8: "Out for Delivery",
+})
+
+const normalizedStatusId = computed(() => Number(props.statusId))
+
 const label = computed(() => {
-    const status = getOfferStatus(props.statusId)
-    return status?.label ?? "Unknown"
+    return STATUS_LABELS[normalizedStatusId.value] ?? "Unknown"
 })
 
 const badgeClass = computed(() => {
-    switch (props.statusId) {
+    switch (normalizedStatusId.value) {
         case 1:
             return "status-badge status-badge--pending"
         case 2:

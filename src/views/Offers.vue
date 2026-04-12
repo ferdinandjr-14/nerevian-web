@@ -41,16 +41,21 @@
             </div>
         </header>
 
-        <div class="mt-5">
+        <p v-if="errorMessage" class="mt-4 text-red-600">{{ errorMessage }}</p>
+        <p v-else-if="isLoading" class="mt-4 text-secondary">Loading offers...</p>
+
+        <div class="mt-5" v-else>
             <OfferList :offers="filteredOffers" @view="goToOfferDetails" />
         </div>
     </section>
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, onMounted, ref } from "vue"
+import { AxiosError } from "axios"
 import { useRouter } from "vue-router"
-import { offers, OFFER_STATUSES } from "../data/offers"
+import { OFFER_STATUSES } from "../data/offers"
+import { fetchOffers, mapOfferToListItem } from "@/services/offers"
 import OfferList from "../components/OfferList.vue"
 
 const router = useRouter()
@@ -65,13 +70,38 @@ const statusOptions = [
 
 const searchTerm = ref("")
 const selectedStatus = ref("all")
+const offers = ref([])
+const isLoading = ref(false)
+const errorMessage = ref("")
+
+const loadOffers = async () => {
+    isLoading.value = true
+    errorMessage.value = ""
+
+    try {
+        const response = await fetchOffers()
+        offers.value = response.items.map(mapOfferToListItem)
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            errorMessage.value = error.response?.data?.message || "Unable to load offers."
+        } else {
+            errorMessage.value = "Unable to load offers."
+        }
+    } finally {
+        isLoading.value = false
+    }
+}
 
 const filteredOffers = computed(() => {
     const query = searchTerm.value.trim().toLowerCase()
 
-    return offers.filter((offer) => {
-        if (selectedStatus.value !== "all" && offer.estatOfertaId !== selectedStatus.value)
+    return offers.value.filter((offer) => {
+        if (
+            selectedStatus.value !== "all" &&
+            Number(offer.estatOfertaId) !== Number(selectedStatus.value)
+        ) {
             return false
+        }
         if (!query) return true
         return String(offer.id).toLowerCase().includes(query)
     })
@@ -82,7 +112,8 @@ const goToCreateOffer = () => {
 }
 
 const goToOfferDetails = (offerId) => {
-    router.push({ name: "create-offer", query: { offerId: String(offerId) } })
+    router.push({ name: "offer-detail", params: { id: String(offerId) } })
 }
+
+onMounted(loadOffers)
 </script>
-<style scoped></style>

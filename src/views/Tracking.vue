@@ -13,7 +13,7 @@
                 <Button
                     icon="pi pi-arrow-right"
                     text
-                    class="font-semibold text-xl"
+                    class="cursor-pointer font-semibold text-xl"
                     type="submit"
                     aria-label="Track order"
                 />

@@ -40,7 +40,11 @@
                     >User Panel</RouterLink
                 >
 
-                <button class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto group">
+                <button
+                    class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto group"
+                    type="button"
+                    @click="handleLogout"
+                >
                     Sign out
                     <i
                         class="pi pi-sign-out group-hover:translate-x-1.5 transition-all duration-300 ease-in-out"
@@ -53,15 +57,22 @@
 
 <script setup>
 import { ref } from "vue"
-import { RouterLink } from "vue-router"
-import { useRoute } from "vue-router"
+import { RouterLink, useRoute, useRouter } from "vue-router"
+import { logout } from "@/services/auth"
 
 const route = useRoute()
+const router = useRouter()
 
 const isOpen = ref(false)
 
 const toggleSidebar = () => {
     isOpen.value = !isOpen.value
+}
+
+const handleLogout = async () => {
+    await logout()
+    isOpen.value = false
+    router.push({ name: "login" })
 }
 </script>
 
