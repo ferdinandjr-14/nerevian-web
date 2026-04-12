@@ -133,35 +133,38 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 import { FilterMatchMode } from "@primevue/core/api"
 import CardInfo from "../components/CardInfo.vue"
 import StatusBadge from "../components/StatusBadge.vue"
-import { offers, OFFER_STATUS_IDS } from "../data/offers"
+import { ACTIVE_OFFER_STATUS_IDS, OFFER_STATUS_IDS } from "../data/offers"
+import { fetchOffers, mapOfferSummary } from "@/services/offers"
 
 const router = useRouter()
+const offers = ref([])
 
 const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const ACTIVE_STATUS_IDS = [
-    OFFER_STATUS_IDS.ACCEPTED,
-    OFFER_STATUS_IDS.SHIPPED,
-    OFFER_STATUS_IDS.DELAYED,
-    OFFER_STATUS_IDS.IN_TRANSIT,
-    OFFER_STATUS_IDS.OUT_FOR_DELIVERY,
-]
+const loadOffers = async () => {
+    try {
+        const data = await fetchOffers()
+        offers.value = data.map(mapOfferSummary)
+    } catch {
+        offers.value = []
+    }
+}
 
 const countByStatus = (statusId) =>
-    offers.filter((offer) => offer.estatOfertaId === statusId).length
+    offers.value.filter((offer) => offer.estatOfertaId === statusId).length
 
 const statsCards = computed(() => {
-    const totalOffers = offers.length
+    const totalOffers = offers.value.length
     const pendingOffers = countByStatus(OFFER_STATUS_IDS.PENDING)
-    const activeOffers = offers.filter((offer) =>
-        ACTIVE_STATUS_IDS.includes(offer.estatOfertaId),
+    const activeOffers = offers.value.filter((offer) =>
+        ACTIVE_OFFER_STATUS_IDS.includes(offer.estatOfertaId),
     ).length
     const rejectedOffers = countByStatus(OFFER_STATUS_IDS.REJECTED)
     const finalizedOffers = countByStatus(OFFER_STATUS_IDS.FINALIZED)
@@ -176,10 +179,10 @@ const statsCards = computed(() => {
 })
 
 const shipments = computed(() =>
-    offers.map((offer) => ({
-        id: `#OFF-${offer.id}`,
+    offers.value.map((offer) => ({
+        id: `OFF-${offer.id}`,
         offerId: offer.id,
-        carrier: `${offer.shippingLineName || offer.inlandCarrierName || "-"}`,
+        carrier: offer.shippingLineName || offer.carrierName || "-",
         origin: offer.originLabel,
         destination: offer.destinationLabel,
         statusId: offer.estatOfertaId,
@@ -189,8 +192,10 @@ const shipments = computed(() =>
 )
 
 const goToOfferDetails = (offerId) => {
-    router.push({ name: "create-offer", query: { offerId: String(offerId) } })
+    router.push({ name: "offer-detail", params: { id: String(offerId) } })
 }
+
+onMounted(loadOffers)
 </script>
 
 <style scoped>

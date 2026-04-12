@@ -72,12 +72,13 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { normalizeOrderValue, trackingOrders } from "../data/trackingOrders"
+import { fetchOfferById, mapOfferSummary } from "@/services/offers"
 
 const route = useRoute()
 const router = useRouter()
+const order = ref(null)
 
 const timelinePreviewSteps = [
     { id: "verified-origin", label: "Verified at origin" },
@@ -87,15 +88,43 @@ const timelinePreviewSteps = [
     { id: "customs", label: "Awaiting customs" },
 ]
 
-const previewActiveStep = 2
+const getPreviewStep = (trackingStepOrder) => {
+    const step = Number(trackingStepOrder)
 
-const order = computed(() => {
-    const target = normalizeOrderValue(route.params.id)
-    return trackingOrders.find(
-        (item) =>
-            normalizeOrderValue(item.orderId) === target ||
-            normalizeOrderValue(item.shipmentId) === target,
-    )
+    if (!step) return 0
+    if (step <= 2) return 0
+    if (step <= 4) return 1
+    if (step <= 6) return 2
+    if (step <= 7) return 3
+    return 4
+}
+
+const previewActiveStep = computed(() => getPreviewStep(order.value?.trackingStepOrder))
+
+const loadOffer = async () => {
+    try {
+        const offer = await fetchOfferById(route.params.id)
+        const summary = mapOfferSummary(offer)
+
+        order.value = {
+            orderId: `OFF-${summary.id}`,
+            shipmentId: `OFF-${summary.id}`,
+            carrier: summary.shippingLineName || summary.carrierName || "-",
+            status: summary.statusLabel,
+            route: `${summary.originLabel} -> ${summary.destinationLabel}`,
+            shipped: summary.createdAt,
+            eta: summary.eta,
+            trackingStepOrder: summary.trackingStepOrder,
+        }
+    } catch {
+        order.value = null
+    }
+}
+
+onMounted(loadOffer)
+
+watch(() => route.params.id, () => {
+    loadOffer()
 })
 </script>
 

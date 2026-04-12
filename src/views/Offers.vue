@@ -56,10 +56,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue"
-import { AxiosError } from "axios"
 import { useRouter } from "vue-router"
 import { OFFER_STATUSES } from "../data/offers"
-import { fetchOffers, mapOfferToListItem } from "@/services/offers"
+import { fetchOffers, mapOfferSummary } from "@/services/offers"
 import OfferList from "../components/OfferList.vue"
 
 const router = useRouter()
@@ -83,14 +82,10 @@ const loadOffers = async () => {
     errorMessage.value = ""
 
     try {
-        const response = await fetchOffers()
-        offers.value = response.items.map(mapOfferToListItem)
+        const data = await fetchOffers()
+        offers.value = data.map(mapOfferSummary)
     } catch (error) {
-        if (error instanceof AxiosError) {
-            errorMessage.value = error.response?.data?.message || "Unable to load offers."
-        } else {
-            errorMessage.value = "Unable to load offers."
-        }
+        errorMessage.value = error.response?.data?.message || "Unable to load offers."
     } finally {
         isLoading.value = false
     }

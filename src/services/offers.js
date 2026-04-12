@@ -1,9 +1,9 @@
 import apiClient from "./api"
 
-export const TRANSPORT_TYPE = Object.freeze({
+export const TRANSPORT_TYPE = {
     MARITIME: 1,
     AIR: 3,
-})
+}
 
 const getTodayValue = () => {
     const now = new Date()
@@ -11,12 +11,38 @@ const getTodayValue = () => {
     return new Date(now.getTime() - offsetMs).toISOString().slice(0, 10)
 }
 
-const normalizeOptionalNumber = (value) => {
-    if (value === "" || value === null || value === undefined) return null
-    return Number(value)
+const toNumberOrNull = (value) => {
+    if (value === null || value === undefined || value === "") {
+        return null
+    }
+
+    const parsedValue = Number(value)
+    return Number.isNaN(parsedValue) ? null : parsedValue
 }
 
-const getIncotermCode = (offer) => offer.incoterm?.tipus_incoterm?.codi?.trim() ?? ""
+const formatDateForInput = (value, fallback = "") => {
+    if (!value) {
+        return fallback
+    }
+
+    return String(value).slice(0, 10)
+}
+
+const formatDateForDisplay = (value) => {
+    if (!value) {
+        return "-"
+    }
+
+    const [year, month, day] = String(value).slice(0, 10).split("-")
+
+    if (!year || !month || !day) {
+        return "-"
+    }
+
+    return `${day}/${month}/${year}`
+}
+
+const getIncotermCode = (offer) => offer.incoterm?.tipus_incoterm?.codi?.trim() || "-"
 
 export const createEmptyOfferForm = () => ({
     tipus_transport_id: null,
@@ -42,31 +68,25 @@ export const createEmptyOfferForm = () => ({
 
 export const assignOfferToForm = (form, offer) => {
     Object.assign(form, createEmptyOfferForm(), {
-        tipus_transport_id: normalizeOptionalNumber(offer.tipus_transport_id),
-        tipus_fluxe_id: normalizeOptionalNumber(offer.tipus_fluxe_id),
-        tipus_carrega_id: normalizeOptionalNumber(offer.tipus_carrega_id),
-        incoterm_id: normalizeOptionalNumber(offer.incoterm_id),
-        client_id: normalizeOptionalNumber(offer.client_id),
-        comentaris: offer.comentaris ?? "",
-        transportista_id: normalizeOptionalNumber(offer.transportista_id),
-        pes_brut: offer.pes_brut ?? "",
-        volum: offer.volum ?? "",
-        tipus_validacio_id: normalizeOptionalNumber(offer.tipus_validacio_id),
-        port_origen_id: normalizeOptionalNumber(offer.port_origen_id),
-        port_desti_id: normalizeOptionalNumber(offer.port_desti_id),
-        aeroport_origen_id: normalizeOptionalNumber(offer.aeroport_origen_id),
-        aeroport_desti_id: normalizeOptionalNumber(offer.aeroport_desti_id),
-        linia_transport_maritim_id: normalizeOptionalNumber(offer.linia_transport_maritim_id),
-        data_creacio: offer.data_creacio
-            ? String(offer.data_creacio).slice(0, 10)
-            : getTodayValue(),
-        data_validessa_inicial: offer.data_validessa_inicial
-            ? String(offer.data_validessa_inicial).slice(0, 10)
-            : "",
-        data_validessa_fina: offer.data_validessa_fina
-            ? String(offer.data_validessa_fina).slice(0, 10)
-            : "",
-        tipus_contenidor_id: normalizeOptionalNumber(offer.tipus_contenidor_id),
+        tipus_transport_id: toNumberOrNull(offer.tipus_transport_id),
+        tipus_fluxe_id: toNumberOrNull(offer.tipus_fluxe_id),
+        tipus_carrega_id: toNumberOrNull(offer.tipus_carrega_id),
+        incoterm_id: toNumberOrNull(offer.incoterm_id),
+        client_id: toNumberOrNull(offer.client_id),
+        comentaris: offer.comentaris || "",
+        transportista_id: toNumberOrNull(offer.transportista_id),
+        pes_brut: offer.pes_brut || "",
+        volum: offer.volum || "",
+        tipus_validacio_id: toNumberOrNull(offer.tipus_validacio_id),
+        port_origen_id: toNumberOrNull(offer.port_origen_id),
+        port_desti_id: toNumberOrNull(offer.port_desti_id),
+        aeroport_origen_id: toNumberOrNull(offer.aeroport_origen_id),
+        aeroport_desti_id: toNumberOrNull(offer.aeroport_desti_id),
+        linia_transport_maritim_id: toNumberOrNull(offer.linia_transport_maritim_id),
+        data_creacio: formatDateForInput(offer.data_creacio, getTodayValue()),
+        data_validessa_inicial: formatDateForInput(offer.data_validessa_inicial),
+        data_validessa_fina: formatDateForInput(offer.data_validessa_fina),
+        tipus_contenidor_id: toNumberOrNull(offer.tipus_contenidor_id),
     })
 }
 
@@ -88,28 +108,28 @@ export const clearTransportSpecificFields = (form) => {
 }
 
 export const createOfferPayload = (form) => ({
-    tipus_transport_id: normalizeOptionalNumber(form.tipus_transport_id),
-    tipus_fluxe_id: normalizeOptionalNumber(form.tipus_fluxe_id),
-    tipus_carrega_id: normalizeOptionalNumber(form.tipus_carrega_id),
-    incoterm_id: normalizeOptionalNumber(form.incoterm_id),
-    client_id: normalizeOptionalNumber(form.client_id),
+    tipus_transport_id: toNumberOrNull(form.tipus_transport_id),
+    tipus_fluxe_id: toNumberOrNull(form.tipus_fluxe_id),
+    tipus_carrega_id: toNumberOrNull(form.tipus_carrega_id),
+    incoterm_id: toNumberOrNull(form.incoterm_id),
+    client_id: toNumberOrNull(form.client_id),
     comentaris: form.comentaris?.trim() || null,
-    transportista_id: normalizeOptionalNumber(form.transportista_id),
-    pes_brut: form.pes_brut === "" ? null : Number(form.pes_brut),
-    volum: form.volum === "" ? null : Number(form.volum),
-    tipus_validacio_id: normalizeOptionalNumber(form.tipus_validacio_id),
-    port_origen_id: normalizeOptionalNumber(form.port_origen_id),
-    port_desti_id: normalizeOptionalNumber(form.port_desti_id),
-    aeroport_origen_id: normalizeOptionalNumber(form.aeroport_origen_id),
-    aeroport_desti_id: normalizeOptionalNumber(form.aeroport_desti_id),
-    linia_transport_maritim_id: normalizeOptionalNumber(form.linia_transport_maritim_id),
+    transportista_id: toNumberOrNull(form.transportista_id),
+    pes_brut: toNumberOrNull(form.pes_brut),
+    volum: toNumberOrNull(form.volum),
+    tipus_validacio_id: toNumberOrNull(form.tipus_validacio_id),
+    port_origen_id: toNumberOrNull(form.port_origen_id),
+    port_desti_id: toNumberOrNull(form.port_desti_id),
+    aeroport_origen_id: toNumberOrNull(form.aeroport_origen_id),
+    aeroport_desti_id: toNumberOrNull(form.aeroport_desti_id),
+    linia_transport_maritim_id: toNumberOrNull(form.linia_transport_maritim_id),
     data_creacio: form.data_creacio || null,
     data_validessa_inicial: form.data_validessa_inicial || null,
     data_validessa_fina: form.data_validessa_fina || null,
-    tipus_contenidor_id: normalizeOptionalNumber(form.tipus_contenidor_id),
+    tipus_contenidor_id: toNumberOrNull(form.tipus_contenidor_id),
 })
 
-export const mapLookupOption = (items, labelBuilder) =>
+export const mapLookupOption = (items = [], labelBuilder) =>
     items.map((item) => ({
         label: labelBuilder(item),
         value: item.id,
@@ -121,31 +141,39 @@ export const getOfferOriginLabel = (offer) =>
 export const getOfferDestinationLabel = (offer) =>
     offer.port_desti?.nom || offer.aeroport_desti?.nom || "-"
 
-export const mapOfferToListItem = (offer) => ({
+export const mapOfferSummary = (offer) => ({
     id: offer.id,
-    estatOfertaId: normalizeOptionalNumber(offer.estat_oferta_id),
-    clientName: offer.client?.nom ?? "-",
+    estatOfertaId: toNumberOrNull(offer.estat_oferta_id),
+    statusLabel: offer.estat_oferta?.estat || "Unknown",
+    clientName: offer.client?.nom || "-",
     incotermCode: getIncotermCode(offer),
-    cargoTypeLabel: offer.tipus_carrega?.tipus ?? "-",
-    shippingLineName: offer.linia_transport_maritim?.nom ?? offer.transportista?.nom ?? "-",
+    cargoTypeLabel: offer.tipus_carrega?.tipus || "-",
+    shippingLineName: offer.linia_transport_maritim?.nom || "-",
+    carrierName: offer.transportista?.nom || offer.linia_transport_maritim?.nom || "-",
     originLabel: getOfferOriginLabel(offer),
     destinationLabel: getOfferDestinationLabel(offer),
+    eta: formatDateForDisplay(offer.data_validessa_fina),
+    createdAt: formatDateForDisplay(offer.data_creacio),
+    trackingStepOrder: toNumberOrNull(offer.incoterm?.tracking_step?.ordre),
 })
 
 export const fetchOffers = async (params = {}) => {
-    const { data } = await apiClient.get("/offers", {
-        params,
-    })
+    const { data } = await apiClient.get("/offers", { params })
 
-    return {
-        items: Array.isArray(data.data) ? data.data : [],
-        meta: data,
+    if (Array.isArray(data)) {
+        return data
     }
+
+    if (Array.isArray(data?.data)) {
+        return data.data
+    }
+
+    return []
 }
 
 export const fetchOfferById = async (id) => {
     const { data } = await apiClient.get(`/offers/${id}`)
-    return data.offer
+    return data.offer || data
 }
 
 export const fetchOfferLookups = async () => {

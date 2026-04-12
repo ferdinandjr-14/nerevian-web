@@ -144,13 +144,15 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 import { FilterMatchMode } from "@primevue/core/api"
 import StatusBadge from "../components/StatusBadge.vue"
-import { offers, OFFER_STATUS_IDS } from "../data/offers"
+import { TRACKING_OFFER_STATUS_IDS } from "../data/offers"
+import { fetchOffers, mapOfferSummary } from "@/services/offers"
 
 const router = useRouter()
+const offers = ref([])
 
 const searchOrderId = ref("")
 const searchError = ref("")
@@ -159,19 +161,22 @@ const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
-const ACTIVE_STATUS_IDS = [
-    OFFER_STATUS_IDS.ACCEPTED,
-    OFFER_STATUS_IDS.SHIPPED,
-    OFFER_STATUS_IDS.IN_TRANSIT,
-]
+const loadOffers = async () => {
+    try {
+        const data = await fetchOffers()
+        offers.value = data.map(mapOfferSummary)
+    } catch {
+        offers.value = []
+    }
+}
 
 const trackingOrders = computed(() =>
-    offers
-        .filter((offer) => ACTIVE_STATUS_IDS.includes(offer.estatOfertaId))
+    offers.value
+        .filter((offer) => TRACKING_OFFER_STATUS_IDS.includes(offer.estatOfertaId))
         .map((offer) => ({
             id: offer.id,
             offerId: offer.id,
-            carrier: `${offer.shippingLineName || offer.inlandCarrierName || "-"}`,
+            carrier: offer.shippingLineName || offer.carrierName || "-",
             origin: offer.originLabel,
             destination: offer.destinationLabel,
             statusId: offer.estatOfertaId,
@@ -191,7 +196,7 @@ const handleTrackSearch = () => {
         return
     }
 
-    const match = offers.find((offer) => String(offer.id).includes(query))
+    const match = offers.value.find((offer) => String(offer.id).includes(query))
 
     if (!match) {
         searchError.value = "Order not found. Try another order number."
@@ -201,4 +206,6 @@ const handleTrackSearch = () => {
     searchError.value = ""
     router.push({ name: "tracking-detail", params: { id: String(match.id) } })
 }
+
+onMounted(loadOffers)
 </script>
