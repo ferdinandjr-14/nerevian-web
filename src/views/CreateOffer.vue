@@ -496,7 +496,6 @@ const selectPT = {
 </script>
 
 <style scoped>
-/* unchanged from OfferDetails */
 .fields-grid {
     display: grid;
     gap: 0.62rem 1.8rem;
