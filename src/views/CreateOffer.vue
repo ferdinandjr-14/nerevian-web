@@ -368,7 +368,7 @@ const clientOptions = computed(() =>
     mapLookupOption(lookups.clients, (item) => `${item.nom} (${item.cif})`),
 )
 const commercials = computed(() =>
-    mapLookupOption(lookups.commercials, (item) => `${item.nom} (${item.cognoms})`),
+    mapLookupOption(lookups.commercials, (item) => `${item.nom} ${item.cognoms}`),
 )
 const carrierOptions = computed(() =>
     mapLookupOption(
