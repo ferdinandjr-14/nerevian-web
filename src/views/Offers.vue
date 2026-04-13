@@ -1,5 +1,5 @@
 <template>
-    <section class="offers-page">
+    <section class="pb-10">
         <header class="flex justify-between">
             <Button
                 label="CREATE OFFER +"

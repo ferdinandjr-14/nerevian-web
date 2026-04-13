@@ -8,7 +8,7 @@
     </div>
     <section
         v-else
-        class="create-offer-page bg-primary! max-[700px]:px-3 max-[700px]:pt-[0.85rem] max-[700px]:pb-[1.8rem]"
+        class="create-offer-page bg-primary! max-[700px]:px-3 max-[700px]:pt-[0.85rem] max-[700px]:pb-[1.8rem] pb-10"
     >
         <header class="flex justify-between mt-5">
             <Button
@@ -270,7 +270,7 @@
                     v-for="(doc, index) in documents"
                     :key="`${doc.name}-${index}`"
                     type="button"
-                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between"
+                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between cursor-pointer"
                     @click="downloadDocument(doc)"
                 >
                     <span>{{ doc.name }}</span>
@@ -285,7 +285,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue"
 import { AxiosError } from "axios"
 import { useRoute, useRouter } from "vue-router"
-import { getOfferDocuments } from "@/services/offer-documents"
+import { fetchOfferDocuments } from "@/services/offer-documents"
 import {
     TRANSPORT_TYPE,
     assignOfferToForm,
@@ -387,23 +387,22 @@ const goBack = () => {
 }
 
 const downloadDocument = (doc) => {
-    const placeholderContent = `Document preview placeholder for ${doc.name}`
-    const blob = new Blob([placeholderContent], { type: "text/plain" })
-    const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement("a")
-    link.href = objectUrl
-    link.download = doc.name.replace(/\.pdf$/i, ".txt")
+    link.href = doc.download_url
+    link.target = "_blank"
+    link.rel = "noopener"
     link.click()
-    URL.revokeObjectURL(objectUrl)
 }
 
 const loadPageData = async () => {
     loadError.value = ""
+    isLoading.value = true
 
     try {
-        const [lookupData, offer] = await Promise.all([
+        const [lookupData, offer, offerDocuments] = await Promise.all([
             fetchOfferLookups(),
             fetchOfferById(route.params.id),
+            fetchOfferDocuments(route.params.id),
         ])
 
         lookups.clients = lookupData.clients ?? []
@@ -421,14 +420,15 @@ const loadPageData = async () => {
         assignOfferToForm(form, offer)
         statusId.value = offer.estat_oferta_id
         statusLabel.value = offer.estat_oferta.estat
-        documents.value = getOfferDocuments(offer.id)
-        isLoading.value = false
+        documents.value = offerDocuments
     } catch (error) {
         if (error instanceof AxiosError) {
             loadError.value = error.response?.data?.message || "Unable to load offer."
         } else {
             loadError.value = "Unable to load offer."
         }
+    } finally {
+        isLoading.value = false
     }
 }
 

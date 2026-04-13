@@ -1,36 +1,25 @@
-const OFFER_DOCUMENTS_KEY = "nerevian.offer.documents"
+import apiClient from "./api"
 
-const canUseStorage = () => typeof window !== "undefined" && typeof window.localStorage !== "undefined"
-
-const readStore = () => {
-    if (!canUseStorage()) return {}
-
-    try {
-        return JSON.parse(window.localStorage.getItem(OFFER_DOCUMENTS_KEY) || "{}")
-    } catch {
-        return {}
-    }
-}
-
-const writeStore = (store) => {
-    if (!canUseStorage()) return
-    window.localStorage.setItem(OFFER_DOCUMENTS_KEY, JSON.stringify(store))
-}
-
-export const saveOfferDocuments = (offerId, documents = []) => {
-    if (!offerId) return
-
-    const store = readStore()
-    store[String(offerId)] = documents.map((document) => ({
-        name: document.name,
-        isPreset: true,
-    }))
-    writeStore(store)
-}
-
-export const getOfferDocuments = (offerId) => {
+export const fetchOfferDocuments = async (offerId) => {
     if (!offerId) return []
 
-    const store = readStore()
-    return Array.isArray(store[String(offerId)]) ? store[String(offerId)] : []
+    const { data } = await apiClient.get(`/offers/${offerId}/documents`)
+    console.log(data)
+    return Array.isArray(data?.documents) ? data.documents : []
+}
+
+export const uploadOfferDocuments = async (offerId, files = []) => {
+    if (!offerId || !files.length) return []
+
+    const formData = new FormData()
+    files.forEach((file) => formData.append("documents[]", file))
+
+    const { data } = await apiClient.post(`/offers/${offerId}/documents`, formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    })
+
+    console.log(data)
+    return Array.isArray(data?.documents) ? data.documents : []
 }

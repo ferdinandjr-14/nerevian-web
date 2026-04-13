@@ -234,9 +234,7 @@
             </AccordionPanel>
         </Accordion>
 
-        <footer
-            class="mt-12 flex max-[700px]:grid max-[700px]:grid-cols-1 justify-between items-center gap-3.5 pb-40"
-        >
+        <footer class="mt-12 flex justify-between items-center gap-3.5 pb-40">
             <div>
                 <input
                     ref="fileInputRef"
@@ -257,7 +255,7 @@
                 <Button
                     label="SUBMIT"
                     type="button"
-                    class="cursor-pointer bg-danger px-5 py-2 text-primary rounded-lg"
+                    class="cursor-pointer bg-danger px-5 py-2 text-primary rounded-lg flex items-center justify-center gap-3"
                     :disabled="isSubmitting"
                     :loading="isSubmitting"
                     @click="submitOffer"
@@ -265,8 +263,8 @@
             </div>
         </footer>
 
-        <p v-if="uploadFeedback" class="mt-[0.45rem] text-[#1c5259]">{{ uploadFeedback }}</p>
-        <p v-if="submitError" class="mt-[0.45rem] text-[#b42318]">{{ submitError }}</p>
+        <p v-if="uploadFeedback" class="mt-[0.45rem] text-secondary">{{ uploadFeedback }}</p>
+        <p v-if="submitError" class="mt-[0.45rem] text-red-500">{{ submitError }}</p>
 
         <Dialog
             v-model:visible="showDocumentsModal"
@@ -294,7 +292,7 @@
                     v-for="(doc, index) in documents"
                     :key="`${doc.name}-${index}`"
                     type="button"
-                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between"
+                    class="bg-accent-muted p-2 rounded-md text-dark flex items-center justify-between cursor-pointer"
                     @click="downloadDocument(doc)"
                 >
                     <span>{{ doc.name }}</span>
@@ -311,13 +309,13 @@ import { useRouter } from "vue-router"
 import {
     TRANSPORT_TYPE,
     clearTransportSpecificFields,
+    createOffer,
     createEmptyOfferForm,
     createOfferPayload,
     fetchOfferLookups,
     mapLookupOption,
 } from "@/services/offers"
-import { saveOfferDocuments } from "@/services/offer-documents"
-import apiClient from "@/services/api"
+import { uploadOfferDocuments } from "@/services/offer-documents"
 
 const sections = [
     { key: "general", title: "General Information" },
@@ -466,10 +464,30 @@ const submitOffer = async () => {
     submitError.value = ""
 
     try {
-        const { data } = await apiClient.post("/offers", createOfferPayload(form))
-        if (data.offer?.id) {
-            saveOfferDocuments(data.offer.id, documents.value)
-            router.push({ name: "offer-detail", params: { id: String(data.offer.id) } })
+        const offer = await createOffer(createOfferPayload(form))
+
+        if (offer?.id && documents.value.length) {
+            try {
+                await uploadOfferDocuments(
+                    offer.id,
+                    documents.value.map((document) => document.file),
+                )
+            } catch (error) {
+                const fieldErrors = error.response?.data?.errors
+                const firstError = fieldErrors
+                    ? Object.values(fieldErrors).flat().find(Boolean)
+                    : null
+                submitError.value =
+                    firstError ||
+                    error.response?.data?.message ||
+                    "Offer created, but the documents could not be uploaded."
+                await router.push({ name: "offer-detail", params: { id: String(offer.id) } })
+                return
+            }
+        }
+
+        if (offer?.id) {
+            router.push({ name: "offer-detail", params: { id: String(offer.id) } })
         }
     } catch (error) {
         const fieldErrors = error.response?.data?.errors
@@ -484,7 +502,7 @@ onMounted(loadLookups)
 
 const selectPT = {
     listcontainer: {
-        class: "max-h-60 overflow-y-auto",
+        class: "max-h-60 overflow-y-auto border",
     },
     list: {
         class: "p-0",

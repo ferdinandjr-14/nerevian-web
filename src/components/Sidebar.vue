@@ -20,13 +20,22 @@
             class="w-64 bg-secondary text-white p-8 absolute top-0 bottom-0 left-0 z-98"
         >
             <nav class="flex flex-col items-end gap-3 h-full">
-                <RouterLink to="/dashboard" :class="route.name === 'dashboard' ? 'active-link' : ''"
+                <RouterLink
+                    @click="toggleSidebar"
+                    to="/dashboard"
+                    :class="route.name === 'dashboard' ? 'active-link' : ''"
                     >Dashboard</RouterLink
                 >
-                <RouterLink to="/offers" :class="route.name === 'offers' ? 'active-link' : ''"
+                <RouterLink
+                    @click="toggleSidebar"
+                    to="/offers"
+                    :class="route.name === 'offers' ? 'active-link' : ''"
                     >Offers</RouterLink
                 >
-                <RouterLink to="/tracking" :class="route.name === 'tracking' ? 'active-link' : ''"
+                <RouterLink
+                    @click="toggleSidebar"
+                    to="/tracking"
+                    :class="route.name === 'tracking' ? 'active-link' : ''"
                     >Tracking</RouterLink
                 >
                 <RouterLink

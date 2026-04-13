@@ -179,5 +179,6 @@ export const fetchOfferLookups = async () => {
 }
 
 export const createOffer = async (formData) => {
-    await apiClient.post("/offers", formData)
+    const { data } = await apiClient.post("/offers", formData)
+    return data.offer || data
 }
