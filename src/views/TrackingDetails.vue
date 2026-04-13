@@ -1,5 +1,5 @@
 <template>
-        <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
     <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
         <LoadingSpinner />
         Loading Order Details...
@@ -125,7 +125,7 @@ const loadOffer = async () => {
             eta: summary.eta,
             trackingStepOrder: summary.trackingStepOrder,
         }
-        isLoading.value = true;
+        isLoading.value = false
     } catch {
         order.value = null
         errorMessage.value = "Couldn't load order"
@@ -134,9 +134,12 @@ const loadOffer = async () => {
 
 onMounted(loadOffer)
 
-watch(() => route.params.id, () => {
-    loadOffer()
-})
+watch(
+    () => route.params.id,
+    () => {
+        loadOffer()
+    },
+)
 </script>
 
 <style scoped>
