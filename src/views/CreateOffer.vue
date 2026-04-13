@@ -483,14 +483,40 @@ const submitOffer = async () => {
 onMounted(loadLookups)
 
 const selectPT = {
-    overlay: {
-        class: "rounded-lg",
+    listcontainer: {
+        class: "max-h-60 overflow-y-auto",
+    },
+    list: {
+        class: "p-0",
+    },
+    header: {
+        class: "border-b bg-white",
+    },
+    pcfiltercontainer: {
+        root: {
+            class: "relative flex items-center w-full",
+        },
+    },
+    pcfilter: {
+        root: {
+            class: [
+                "w-full bg-transparent",
+                "pl-9 pr-3 py-2 text-sm",
+                "text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]",
+                "outline-none focus:ring-0",
+            ],
+        },
+    },
+    pcfiltericoncontainer: {
+        root: {
+            class: [
+                "absolute left-3 top-1/2 -translate-y-1/2",
+                "pointer-events-none text-[var(--color-text-muted)]",
+            ],
+        },
     },
     option: {
         class: "bg-white px-4 py-2 hover:bg-gray-200 cursor-pointer",
-    },
-    list: {
-        class: "p-1",
     },
 }
 </script>
