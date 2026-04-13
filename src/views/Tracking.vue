@@ -1,5 +1,10 @@
 <template>
-    <section>
+    <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
+    <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
+        <LoadingSpinner />
+        Loading Dashboard...
+    </div>
+    <section v-else>
         <header class="flex gap-2 mb-5 py-3">
             <span class="font-semibold text-xl">TRACK ORDER:</span>
             <form class="border-b" @submit.prevent="handleTrackSearch">
@@ -150,6 +155,7 @@ import { FilterMatchMode } from "@primevue/core/api"
 import StatusBadge from "../components/StatusBadge.vue"
 import { TRACKING_OFFER_STATUS_IDS } from "../data/offers"
 import { fetchOffers, mapOfferSummary } from "@/services/offers"
+import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const router = useRouter()
 const offers = ref([])
@@ -161,12 +167,17 @@ const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
 
+const isLoading = ref(true)
+const errorMessage = ref(null)
+
 const loadOffers = async () => {
     try {
         const data = await fetchOffers()
         offers.value = data.map(mapOfferSummary)
+        isLoading.value = false
     } catch {
         offers.value = []
+        errorMessage.value = "Couln't load orders"
     }
 }
 

@@ -43,10 +43,8 @@
 
         <p v-if="errorMessage" class="mt-4 text-red-600">{{ errorMessage }}</p>
         <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
-            <span
-                class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
-            />
-            Loading offers
+            <LoadingSpinner />
+            Loading offers...
         </div>
         <div class="mt-5" v-else>
             <OfferList :offers="filteredOffers" @view="goToOfferDetails" />
@@ -60,6 +58,7 @@ import { useRouter } from "vue-router"
 import { OFFER_STATUSES } from "../data/offers"
 import { fetchOffers, mapOfferSummary } from "@/services/offers"
 import OfferList from "../components/OfferList.vue"
+import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const router = useRouter()
 

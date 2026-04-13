@@ -40,7 +40,7 @@
                 <Button
                     label="LOGIN"
                     type="submit"
-                    class="mt-4 w-full bg-danger rounded-lg py-2 text-primary cursor-pointer"
+                    class="mt-4 w-full bg-danger rounded-lg py-2 text-primary cursor-pointer flex items-center gap-3 justify-center"
                     :loading="isSubmitting"
                 />
             </form>

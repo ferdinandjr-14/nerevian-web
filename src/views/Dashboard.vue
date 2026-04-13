@@ -1,5 +1,10 @@
 <template>
-    <section>
+    <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
+    <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
+        <LoadingSpinner />
+        Loading Dashboard...
+    </div>
+    <section v-else>
         <div class="stats-grid">
             <CardInfo
                 v-for="card in statsCards"
@@ -140,9 +145,12 @@ import CardInfo from "../components/CardInfo.vue"
 import StatusBadge from "../components/StatusBadge.vue"
 import { ACTIVE_OFFER_STATUS_IDS, OFFER_STATUS_IDS } from "../data/offers"
 import { fetchOffers, mapOfferSummary } from "@/services/offers"
+import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const router = useRouter()
 const offers = ref([])
+const isLoading = ref(true)
+const errorMessage = ref(null)
 
 const tableFilters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -152,8 +160,10 @@ const loadOffers = async () => {
     try {
         const data = await fetchOffers()
         offers.value = data.map(mapOfferSummary)
+        isLoading.value = false
     } catch {
         offers.value = []
+        errorMessage.value = "Coulnd't load offers"
     }
 }
 

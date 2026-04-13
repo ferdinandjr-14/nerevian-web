@@ -4,7 +4,7 @@
         <span
             class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
         />
-        Loading users
+        Loading users...
     </div>
     <section v-else class="pb-10">
         <Tabs v-if="roleTabs.length" v-model:value="activeRoleTab">

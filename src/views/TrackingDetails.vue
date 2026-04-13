@@ -1,5 +1,10 @@
 <template>
-    <section class="tracking-details-page bg-primary!">
+        <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
+    <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
+        <LoadingSpinner />
+        Loading Order Details...
+    </div>
+    <section v-else class="tracking-details-page bg-primary!">
         <header class="details-header">
             <button type="button" class="back-btn" @click="router.push({ name: 'tracking' })">
                 Back to tracking
@@ -75,10 +80,14 @@
 import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import { fetchOfferById, mapOfferSummary } from "@/services/offers"
+import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
+
+const isLoading = ref(true)
+const errorMessage = ref(null)
 
 const timelinePreviewSteps = [
     { id: "verified-origin", label: "Verified at origin" },
@@ -116,8 +125,10 @@ const loadOffer = async () => {
             eta: summary.eta,
             trackingStepOrder: summary.trackingStepOrder,
         }
+        isLoading.value = true;
     } catch {
         order.value = null
+        errorMessage.value = "Couldn't load order"
     }
 }
 
