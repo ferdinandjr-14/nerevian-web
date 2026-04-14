@@ -113,6 +113,10 @@
                                 :pt="selectPT"
                             />
                         </label>
+                        <label class="field-block">
+                            <span>Price</span>
+                            <InputText v-model="form.preu" type="number" min="0" step="0.01" />
+                        </label>
                     </div>
 
                     <div v-if="section.key === 'route'" class="fields-grid cols-3">
@@ -211,7 +215,7 @@
                         <label class="field-block">
                             <span>Commercial</span>
                             <Select
-                                v-model="form.agent_commercial_id"
+                                v-model="form.agent_comercial_id"
                                 :options="commercials"
                                 optionLabel="label"
                                 optionValue="value"

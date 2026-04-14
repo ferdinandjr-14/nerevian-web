@@ -101,6 +101,10 @@
                                 disabled
                             />
                         </label>
+                        <label class="field-block">
+                            <span>Price</span>
+                            <InputText :modelValue="form.preu" type="number" disabled />
+                        </label>
                     </div>
 
                     <div v-if="section.key === 'route'" class="fields-grid cols-3">
@@ -211,6 +215,10 @@
                     </div>
 
                     <div v-if="section.key === 'additional'" class="fields-grid cols-3">
+                        <label class="field-block">
+                            <span>Commercial</span>
+                            <InputText :modelValue="assignedCommercialLabel" type="text" disabled />
+                        </label>
                         <label class="field-block col-span-full">
                             <span>Comments</span>
                             <Textarea
@@ -327,6 +335,7 @@ const loadError = ref("")
 const documents = ref([])
 const showDocumentsModal = ref(false)
 const isLoading = ref(true)
+const assignedCommercialLabel = ref("-")
 
 const transportOptions = computed(() =>
     mapLookupOption(lookups.tipus_transports, (item) => item.tipus),
@@ -420,6 +429,9 @@ const loadPageData = async () => {
         assignOfferToForm(form, offer)
         statusId.value = offer.estat_oferta_id
         statusLabel.value = offer.estat_oferta.estat
+        assignedCommercialLabel.value = offer.agent_comercial
+            ? `${offer.agent_comercial.nom} ${offer.agent_comercial.cognoms}`.trim()
+            : "-"
         documents.value = offerDocuments
     } catch (error) {
         if (error instanceof AxiosError) {
