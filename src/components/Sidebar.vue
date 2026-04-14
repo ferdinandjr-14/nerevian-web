@@ -41,6 +41,7 @@
                 <RouterLink
                     to="/user-panel"
                     :class="route.name === 'user-panel' ? 'active-link' : ''"
+                    v-if="authState.user.rol_id === '4'"
                     >User Panel</RouterLink
                 >
 
@@ -63,6 +64,7 @@
 import { ref } from "vue"
 import { RouterLink, useRoute, useRouter } from "vue-router"
 import { logout } from "@/services/auth"
+import { authState } from "@/services/auth"
 
 const route = useRoute()
 const router = useRouter()

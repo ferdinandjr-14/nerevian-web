@@ -257,6 +257,7 @@
                         optionLabel="label"
                         optionValue="value"
                         :pt="selectPT"
+                        class="flex items-center justify-between p-2 border rounded-md"
                     />
                 </label>
                 <label v-if="isClientRoleSelected" class="flex flex-col gap-1.5">
@@ -269,6 +270,7 @@
                         filter
                         placeholder="Select client"
                         :pt="selectPT"
+                        class="flex items-center justify-between p-2 border rounded-md"
                     />
                 </label>
             </div>
@@ -328,25 +330,46 @@ import {
     fetchAdminUsers,
     updateAdminUser,
 } from "@/services/users"
+import router from "@/router"
 
 const confirm = useConfirm()
 
 const selectPT = {
-    root: {
-        class: "border border-secondary-muted rounded-lg px-3 py-2 text-dark bg-primary flex items-center justify-between outline-none cursor-pointer focus:border-accent",
+    listcontainer: {
+        class: "max-h-60 overflow-y-auto border",
     },
-    label: { class: "text-dark" },
-    dropdown: { class: "text-dark/70" },
-    overlay: {
-        class: "bg-primary border border-secondary-muted rounded-lg mt-1 shadow-lg z-50 overflow-hidden",
+    list: {
+        class: "p-0",
     },
-    option: ({ context }) => ({
-        class: [
-            "px-4 py-2 cursor-pointer transition-colors",
-            context.selected ? "bg-accent text-primary" : "text-dark hover:bg-secondary-muted",
-        ],
-    }),
-    list: { class: "py-1" },
+    header: {
+        class: "border bg-white",
+    },
+    pcfiltercontainer: {
+        root: {
+            class: "relative flex items-center w-full",
+        },
+    },
+    pcfilter: {
+        root: {
+            class: [
+                "w-full bg-transparent",
+                "pl-9 pr-3 py-2 text-sm",
+                "text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]",
+                "outline-none focus:ring-0",
+            ],
+        },
+    },
+    pcfiltericoncontainer: {
+        root: {
+            class: [
+                "absolute left-3 top-1/2 -translate-y-1/2",
+                "pointer-events-none text-[var(--color-text-muted)]",
+            ],
+        },
+    },
+    option: {
+        class: "bg-white px-4 py-2 hover:bg-gray-200 cursor-pointer",
+    },
 }
 
 const columnPT = {
@@ -562,6 +585,7 @@ const openDeleteConfirm = (event, user) => {
 }
 
 const loadUserPanel = async () => {
+    if (authState.user.rol_id !== "4") router.replace("/dashboard")
     isLoading.value = true
     pageError.value = ""
 

@@ -20,7 +20,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue"
 import { RouterView, useRoute, useRouter } from "vue-router"
-import { isAuthenticated, restoreSession } from "@/services/auth"
+import { isAuthenticated, restoreSession, authState, logout } from "@/services/auth"
 import Sidebar from "@/components/Sidebar.vue"
 
 const router = useRouter()
@@ -37,6 +37,7 @@ const redirectToLogin = async () => {
 }
 
 onMounted(async () => {
+    if (Number(authState.user.rol_id) === 1 || Number(authState.user.rol_id) === 3) await logout()
     try {
         if (!isAuthenticated()) {
             await restoreSession()
