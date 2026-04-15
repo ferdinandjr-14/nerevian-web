@@ -13,7 +13,7 @@
 
         <template v-if="order">
             <section class="timeline-preview" aria-label="Tracking progress preview">
-                <div class="timeline-track" aria-hidden="true">
+                <div class="timeline-track" :style="timelineGridStyle" aria-hidden="true">
                     <div
                         v-for="(step, index) in timelinePreviewSteps"
                         :key="step.id"
@@ -35,7 +35,7 @@
                     </div>
                 </div>
 
-                <div class="timeline-labels" aria-hidden="true">
+                <div class="timeline-labels" :style="timelineGridStyle" aria-hidden="true">
                     <p
                         v-for="(step, index) in timelinePreviewSteps"
                         :key="`${step.id}-label`"
@@ -79,42 +79,57 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { fetchOfferById, mapOfferSummary } from "@/services/offers"
+import {
+    fetchOfferById,
+    fetchOfferTrackingSteps,
+    mapOfferSummary,
+} from "@/services/offers"
 import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
+const trackingSteps = ref([])
+const currentTrackingStep = ref(null)
 
 const isLoading = ref(true)
 const errorMessage = ref(null)
 
-const timelinePreviewSteps = [
-    { id: "verified-origin", label: "Verified at origin" },
-    { id: "loaded-freight", label: "Loaded on freight" },
-    { id: "on-route", label: "On route" },
-    { id: "arrived-destination", label: "Arrived at destination port" },
-    { id: "customs", label: "Awaiting customs" },
-]
+const timelinePreviewSteps = computed(() =>
+    trackingSteps.value.map((step) => ({
+        id: step.id,
+        label: step.nom,
+    })),
+)
 
-const getPreviewStep = (trackingStepOrder) => {
-    const step = Number(trackingStepOrder)
+const getPreviewStep = (steps, trackingStepId) => {
+    if (!steps.length) return -1
 
-    if (!step) return 0
-    if (step <= 2) return 0
-    if (step <= 4) return 1
-    if (step <= 6) return 2
-    if (step <= 7) return 3
-    return 4
+    const currentIndex = steps.findIndex((step) => Number(step.id) === Number(trackingStepId))
+    return currentIndex >= 0 ? currentIndex : 0
 }
 
-const previewActiveStep = computed(() => getPreviewStep(order.value?.trackingStepOrder))
+const previewActiveStep = computed(() =>
+    getPreviewStep(timelinePreviewSteps.value, currentTrackingStep.value?.id),
+)
+
+const timelineGridStyle = computed(() => ({
+    "--timeline-columns": Math.max(timelinePreviewSteps.value.length, 1),
+}))
 
 const loadOffer = async () => {
     try {
-        const offer = await fetchOfferById(route.params.id)
+        isLoading.value = true
+        errorMessage.value = null
+
+        const [offer, availableTrackingSteps] = await Promise.all([
+            fetchOfferById(route.params.id),
+            fetchOfferTrackingSteps(route.params.id),
+        ])
         const summary = mapOfferSummary(offer)
 
+        trackingSteps.value = availableTrackingSteps
+        currentTrackingStep.value = offer.tracking_step ?? null
         order.value = {
             orderId: `OFF-${summary.id}`,
             shipmentId: `OFF-${summary.id}`,
@@ -123,12 +138,14 @@ const loadOffer = async () => {
             route: `${summary.originLabel} -> ${summary.destinationLabel}`,
             shipped: summary.createdAt,
             eta: summary.eta,
-            trackingStepOrder: summary.trackingStepOrder,
         }
-        isLoading.value = false
     } catch {
         order.value = null
+        trackingSteps.value = []
+        currentTrackingStep.value = null
         errorMessage.value = "Couldn't load order"
+    } finally {
+        isLoading.value = false
     }
 }
 
@@ -184,7 +201,7 @@ watch(
 .timeline-track {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(5, minmax(50px, 1fr));
+    grid-template-columns: repeat(var(--timeline-columns, 5), minmax(50px, 1fr));
     align-items: center;
     gap: 1.15rem;
     padding: 0 0.5rem;
@@ -203,7 +220,7 @@ watch(
 
 .timeline-labels {
     display: grid;
-    grid-template-columns: repeat(5, minmax(50px, 1fr));
+    grid-template-columns: repeat(var(--timeline-columns, 5), minmax(50px, 1fr));
     gap: 0.75rem;
     margin-top: 0.45rem;
 }

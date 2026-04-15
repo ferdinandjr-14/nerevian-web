@@ -155,7 +155,7 @@ export const mapOfferSummary = (offer) => ({
     destinationLabel: getOfferDestinationLabel(offer),
     eta: formatDateForDisplay(offer.data_validessa_fina),
     createdAt: formatDateForDisplay(offer.data_creacio),
-    trackingStepOrder: toNumberOrNull(offer.incoterm?.tracking_step?.ordre),
+    trackingStepOrder: toNumberOrNull(offer.tracking_step?.ordre),
 })
 
 export const fetchOffers = async (params = {}) => {
@@ -175,6 +175,11 @@ export const fetchOffers = async (params = {}) => {
 export const fetchOfferById = async (id) => {
     const { data } = await apiClient.get(`/offers/${id}`)
     return data.offer || data
+}
+
+export const fetchOfferTrackingSteps = async (id) => {
+    const { data } = await apiClient.get(`/offers/${id}/tracking`)
+    return Array.isArray(data?.tracking_steps) ? data.tracking_steps : []
 }
 
 export const fetchOfferLookups = async () => {
