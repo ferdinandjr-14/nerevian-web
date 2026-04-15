@@ -55,6 +55,9 @@
                         }),
                         list: { class: 'p-1' },
                     },
+                    pages: {
+                        class: 'flex items-center gap-3',
+                    },
                 },
             }"
         >
