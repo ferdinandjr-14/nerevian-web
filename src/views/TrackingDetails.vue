@@ -2,7 +2,7 @@
     <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
     <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
         <LoadingSpinner />
-        Tracking Order...
+        Tracking Order Details...
     </div>
     <section v-else class="tracking-details-page bg-primary!">
         <header class="details-header">
@@ -79,11 +79,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import {
-    fetchOfferById,
-    fetchOfferTrackingSteps,
-    mapOfferSummary,
-} from "@/services/offers"
+import { fetchOfferById, fetchOfferTrackingSteps, mapOfferSummary } from "@/services/offers"
 import LoadingSpinner from "@/components/LoadingSpinner.vue"
 
 const route = useRoute()

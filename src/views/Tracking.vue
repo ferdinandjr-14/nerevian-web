@@ -2,7 +2,7 @@
     <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
     <div v-else-if="isLoading" class="flex items-center gap-2 mt-5">
         <LoadingSpinner />
-        Loading Dashboard...
+        Tracking Orders...
     </div>
     <section v-else>
         <header class="flex gap-2 mb-5 py-3">

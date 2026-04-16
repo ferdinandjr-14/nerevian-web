@@ -1,15 +1,12 @@
 <template>
-    <p v-if="loadError" class="mt-[0.45rem] text-[#b42318]">{{ loadError }}</p>
+    <p v-if="loadError" class="mt-2 text-red-500">{{ loadError }}</p>
     <div v-else-if="isLoadingLookups" class="flex items-center gap-2">
         <span
             class="inline-block w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
         />
         Loading data...
     </div>
-    <section
-        v-else
-        class="create-offer-page bg-primary! max-[700px]:px-3 max-[700px]:pt-[0.85rem] max-[700px]:pb-[1.8rem]"
-    >
+    <section v-else class="create-offer-page bg-primary! px-3 pt-3 pb-7 sm:px-4 sm:pt-4 sm:pb-8">
         <header class="flex justify-between mt-5 items-center">
             <Button
                 icon="pi pi-arrow-left"
@@ -267,8 +264,8 @@
             </div>
         </footer>
 
-        <p v-if="uploadFeedback" class="mt-[0.45rem] text-secondary">{{ uploadFeedback }}</p>
-        <p v-if="submitError" class="mt-[0.45rem] text-red-500">{{ submitError }}</p>
+        <p v-if="uploadFeedback" class="mt-2 text-secondary">{{ uploadFeedback }}</p>
+        <p v-if="submitError" class="mt-2 text-red-500">{{ submitError }}</p>
 
         <Dialog
             v-model:visible="showDocumentsModal"
@@ -289,7 +286,7 @@
                 </h3>
             </template>
             <div class="flex flex-col gap-2 bg-primary p-3">
-                <p v-if="!documents.length" class="m-0 text-[#2c575e]">
+                <p v-if="!documents.length" class="m-0 text-secondary-muted">
                     No documents uploaded yet.
                 </p>
                 <Button
