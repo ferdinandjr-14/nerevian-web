@@ -20,6 +20,5 @@ export const uploadOfferDocuments = async (offerId, files = []) => {
         },
     })
 
-    console.log(data)
     return Array.isArray(data?.documents) ? data.documents : []
 }
