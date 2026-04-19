@@ -42,7 +42,15 @@
                     to="/user-panel"
                     :class="route.name === 'user-panel' ? 'active-link' : ''"
                     v-if="authState.user.rol_id === '4'"
+                    @click="toggleSidebar"
                     >User Panel</RouterLink
+                >
+                <RouterLink
+                    to="/clients"
+                    :class="route.name === 'clients' ? 'active-link' : ''"
+                    v-if="authState.user.rol_id === '4'"
+                    @click="toggleSidebar"
+                    >Clients</RouterLink
                 >
 
                 <button
