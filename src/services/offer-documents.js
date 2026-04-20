@@ -4,7 +4,6 @@ export const fetchOfferDocuments = async (offerId) => {
     if (!offerId) return []
 
     const { data } = await apiClient.get(`/offers/${offerId}/documents`)
-    console.log(data)
     return Array.isArray(data?.documents) ? data.documents : []
 }
 
