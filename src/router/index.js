@@ -20,7 +20,7 @@ const router = createRouter({
                 {
                     path: "dashboard",
                     name: "dashboard",
-                    component: () => import("../views/Dashboard.vue"),
+                    component: () => import("../components/SupersetDashboard.vue"),
                 },
                 { path: "offers", name: "offers", component: () => import("../views/Offers.vue") },
                 {
