@@ -27,6 +27,8 @@
             ref="containerRef"
             class="min-h-[78vh] overflow-hidden rounded-3xl border border-secondary-muted bg-secondary shadow-sm"
         />
+
+        <ChatBot />
     </section>
 </template>
 
@@ -34,6 +36,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue"
 import LoadingSpinner from "@/components/LoadingSpinner.vue"
 import { mountSupersetDashboard } from "@/services/SupersetDashboard"
+import ChatBot from "./ChatBot.vue"
 
 const props = defineProps({
     dashboardId: {
