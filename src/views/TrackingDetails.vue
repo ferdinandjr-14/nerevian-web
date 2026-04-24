@@ -61,6 +61,7 @@
                         <p><span>Route:</span> {{ order.route }}</p>
                         <p><span>Shipped:</span> {{ order.shipped }}</p>
                         <p><span>ETA:</span> {{ order.eta }}</p>
+                        <p><span>Incoterm:</span> {{ order.incoterm }}</p>
                     </div>
                 </template>
             </Card>
@@ -134,6 +135,7 @@ const loadOffer = async () => {
             route: `${summary.originLabel} -> ${summary.destinationLabel}`,
             shipped: summary.createdAt,
             eta: summary.eta,
+            incoterm: summary.incoterm,
         }
     } catch {
         order.value = null

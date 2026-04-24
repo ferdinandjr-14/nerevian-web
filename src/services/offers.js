@@ -156,6 +156,7 @@ export const mapOfferSummary = (offer) => ({
     eta: formatDateForDisplay(offer.data_validessa_fina),
     createdAt: formatDateForDisplay(offer.data_creacio),
     trackingStepOrder: toNumberOrNull(offer.tracking_step?.ordre),
+    incoterm: offer.incoterm.tipus_incoterm.codi,
 })
 
 export const fetchOffers = async (params = {}) => {

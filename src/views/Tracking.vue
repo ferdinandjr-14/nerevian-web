@@ -68,6 +68,12 @@
                         }),
                         list: { class: 'p-1' },
                     },
+                    pages: {
+                        class: 'flex items-center',
+                    },
+                    page: {
+                        class: 'cursor-pointer hover:bg-secondary px-3 py-1 rounded-2xl transition-all duration-300 ease-in-out',
+                    },
                 },
             }"
         >
@@ -81,7 +87,7 @@
                 <template #body="{ data }">
                     <div class="flex flex-col gap-0.5">
                         <p class="text-accent font-semibold text-sm tracking-wide">
-                            #{{ data.id }}
+                            #OFF-{{ data.id }}
                         </p>
                         <p class="text-primary text-xs opacity-50">Carrier: {{ data.carrier }}</p>
                     </div>
