@@ -1,8 +1,10 @@
 <template>
     <section
-        class="flex h-full min-h-[78vh] flex-col overflow-hidden rounded-[2rem] border border-secondary-muted bg-secondary text-primary shadow-[0_20px_60px_rgba(10,58,64,0.22)]"
+        class="flex h-full min-h-[78vh] flex-col overflow-hidden rounded-4xl border border-secondary-muted bg-secondary text-primary shadow-[0_20px_60px_rgba(10,58,64,0.22)]"
     >
-        <header class="border-b border-secondary-muted bg-linear-to-br from-secondary to-secondary-muted p-5">
+        <header
+            class="border-b border-secondary-muted bg-linear-to-br from-secondary to-secondary-muted p-5"
+        >
             <p class="text-xs font-semibold uppercase tracking-[0.35em] text-accent-muted">
                 Analytics Copilot
             </p>
@@ -48,17 +50,17 @@
                 <div
                     :class="
                         message.role === 'user'
-                            ? 'rounded-[1.5rem] rounded-br-md bg-accent px-4 py-3 text-sm leading-6 text-primary shadow-lg'
-                            : 'rounded-[1.5rem] rounded-bl-md border border-primary/10 bg-primary/8 px-4 py-3 text-sm leading-6 text-primary/92 backdrop-blur-sm'
+                            ? 'rounded-3 rounded-br-md bg-accent px-4 py-3 text-sm leading-6 text-primary shadow-lg'
+                            : 'rounded-3 rounded-bl-md border border-primary/10 bg-primary/8 px-4 py-3 text-sm leading-6 text-primary/92 backdrop-blur-sm'
                     "
                 >
-                    {{ message.content }}
+                    <div v-html="message.content"></div>
                 </div>
             </article>
 
             <article v-if="isLoading" class="mr-auto max-w-[92%]">
                 <div
-                    class="flex items-center gap-2 rounded-[1.5rem] rounded-bl-md border border-primary/10 bg-primary/8 px-4 py-3 text-sm text-primary/75"
+                    class="flex items-center gap-2 rounded-3 rounded-bl-md border border-primary/10 bg-primary/8 px-4 py-3 text-sm text-primary/75"
                 >
                     <LoadingSpinner />
                     <span>Thinking through the workflow...</span>
@@ -73,7 +75,7 @@
                     <textarea
                         v-model="draft"
                         rows="3"
-                        class="min-h-28 w-full resize-none rounded-[1.5rem] border border-secondary-muted bg-primary px-4 py-3 text-sm text-dark outline-none transition placeholder:text-dark/40 focus:border-accent"
+                        class="min-h-28 w-full resize-none rounded-3 border border-secondary-muted bg-primary px-4 py-3 text-sm text-dark outline-none transition placeholder:text-dark/40 focus:border-accent"
                         :disabled="isLoading"
                         placeholder="Ask about imports, route risk, year-over-year changes, or what the dashboard is showing..."
                         @keydown.enter.exact.prevent="send"
@@ -82,7 +84,7 @@
 
                 <button
                     type="submit"
-                    class="flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-primary transition hover:bg-[#0e7a7a] disabled:cursor-not-allowed disabled:opacity-50"
+                    class="flex h-12 min-w-12 cursor-pointer items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-primary transition hover:bg-accent-muted disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="isLoading || !canSend"
                 >
                     <i class="pi pi-send text-sm" />
@@ -111,7 +113,7 @@ const messages = ref([
         id: crypto.randomUUID(),
         role: "assistant",
         content:
-            "I’m connected to the logistics workflow. Ask for trends, anomalies, or a short explanation of what you see in the Superset dashboard.",
+            "I’m Nerevian's assistant. Ask for trends, anomalies, or a short explanation of what you see in the Superset dashboard.",
     },
 ])
 
