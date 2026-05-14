@@ -61,6 +61,11 @@ const router = createRouter({
                     component: () => import("../views/Clients.vue"),
                 },
                 {
+                    path: "admin/incoterms",
+                    name: "incoterms",
+                    component: () => import("../views/Incoterms.vue"),
+                },
+                {
                     path: "Userpanel",
                     redirect: { name: "user-panel" },
                 },

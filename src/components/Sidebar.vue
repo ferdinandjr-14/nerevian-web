@@ -52,6 +52,13 @@
                     @click="toggleSidebar"
                     >Clients</RouterLink
                 >
+                <RouterLink
+                    to="/admin/incoterms"
+                    :class="route.name === 'incoterms' ? 'active-link' : ''"
+                    v-if="authState.user.rol_id === '4'"
+                    @click="toggleSidebar"
+                    >Incoterms</RouterLink
+                >
 
                 <button
                     class="cursor-pointer text-red-500 flex items-center gap-2 mt-auto group"
