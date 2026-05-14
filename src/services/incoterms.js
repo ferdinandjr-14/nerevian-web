@@ -1,12 +1,22 @@
 import apiClient from "./api"
 
-const mapIncoterm = (incoterm) => ({
-    id: Number(incoterm.id),
-    codi: incoterm.codi || "",
-    nom: incoterm.nom || "",
-    tracking_steps: Array.isArray(incoterm.tracking_steps) ? incoterm.tracking_steps : [],
-    raw: incoterm,
-})
+const mapIncoterm = (incoterm) => {
+    const source = incoterm || {}
+
+    return {
+        id: Number(source.id ?? 0),
+        codi: source.codi || "",
+        nom: source.nom || "",
+        tracking_steps: Array.isArray(source.tracking_steps)
+            ? source.tracking_steps
+            : Array.isArray(source.trackingSteps)
+              ? source.trackingSteps
+              : [],
+        raw: source,
+    }
+}
+
+const extractIncotermFromResponse = (data) => data?.incoterm ?? data?.data ?? data ?? null
 
 const buildIncotermPayload = (form) => ({
     codi: form.codi.trim(),
@@ -27,12 +37,12 @@ export const fetchTrackingSteps = async () => {
 
 export const createIncoterm = async (form) => {
     const { data } = await apiClient.post("/admin/incoterms", buildIncotermPayload(form))
-    return mapIncoterm(data.incoterm)
+    return mapIncoterm(extractIncotermFromResponse(data))
 }
 
 export const updateIncoterm = async (incotermId, form) => {
     const { data } = await apiClient.put(`/admin/incoterms/${incotermId}`, buildIncotermPayload(form))
-    return mapIncoterm(data.incoterm)
+    return mapIncoterm(extractIncotermFromResponse(data))
 }
 
 export const deleteIncoterm = async (incotermId) => {
