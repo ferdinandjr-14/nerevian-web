@@ -26,5 +26,7 @@
 
 <script setup>
 import Button from "primevue/button"
+
 const props = defineProps({ incoterm: { type: Object, required: true } })
+const emits = defineEmits(['edit', 'delete'])
 </script>
